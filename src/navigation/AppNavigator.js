@@ -14,18 +14,15 @@ import Register from "../screens/auth/Register";
 import ForgetPassword from "../screens/auth/ForgetPassword";
 
 import Loading from "../screens/utils/Loading";
+import History from "../screens/home/History";
+import Profile from "../screens/home/Profile";
+import Vehicle from "../screens/home/Vehicle";
+import Map from "../screens/home/Map";
+import { API_KEY } from "../config/constants";
 
 // Better put your these secret keys in .env file
 const firebaseConfig = {
-//   apiKey: "AIzaSyCbtb5zcnXVF_t1l3uckddhm_1sSjWWCDc",
-// //   apiKey: "AIzaSyD9Sl_QM-OJSsYbNMb0mCjK6dRw3rS-FoA",
-//   authDomain: "",
-//   databaseURL: "",
-//   projectId: "project-map-374713",
-//   storageBucket: "project-map-374713.appspot.com",
-//   messagingSenderId: "193173086439",
-//   appId: "193173086439:android:edea8de753103409394242",
-    apiKey: "AIzaSyCbtb5zcnXVF_t1l3uckddhm_1sSjWWCDc",
+    apiKey: API_KEY,
     authDomain: "project-map-374713.firebaseapp.com",
     projectId: "project-map-374713",
     storageBucket: "project-map-374713.appspot.com",
@@ -63,7 +60,10 @@ const Main = () => {
       }}
     >
       <MainStack.Screen name="Home" component={Home} />
-      <MainStack.Screen name="SecondScreen" component={SecondScreen} />
+      <MainStack.Screen name="History" component={History} />
+      <MainStack.Screen name="Profile" component={Profile} />
+      <MainStack.Screen name="Vehicle" component={Vehicle} />
+      <MainStack.Screen name="Map" component={Map} />
     </MainStack.Navigator>
   );
 };
