@@ -2,7 +2,7 @@ import React from "react";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { AuthProvider } from "./src/provider/AuthProvider";
 import { ThemeProvider } from "react-native-rapi-ui";
-import { LogBox } from "react-native";
+import { LogBox, Platform, SafeAreaView, StatusBar } from "react-native";
 
 export default function App(props) {
   const images = [

@@ -2,6 +2,7 @@ import React from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { Button, Text } from "react-native-rapi-ui";
 import { Col, Row } from "./Flex";
+import { View } from "react-native";
 
 export default (props) => {
   const { title, value, startIcon, endIcon, style, onChange } = props;

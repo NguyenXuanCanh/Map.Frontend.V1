@@ -23,14 +23,15 @@ import { getDatabase } from "firebase/database";
 
 // Better put your these secret keys in .env file
 const firebaseConfig = {
-    apiKey: API_KEY,
-    authDomain: "project-map-374713.firebaseapp.com",
-    projectId: "project-map-374713",
-    storageBucket: "project-map-374713.appspot.com",
-    messagingSenderId: "193173086439",
-    appId: "1:193173086439:web:48ddcaa968d22a14394242",
-    measurementId: "G-M3VNWX673T",
-    databaseURL: "https://project-map-374713-default-rtdb.asia-southeast1.firebasedatabase.app",
+  apiKey: API_KEY,
+  authDomain: "project-map-374713.firebaseapp.com",
+  projectId: "project-map-374713",
+  storageBucket: "project-map-374713.appspot.com",
+  messagingSenderId: "193173086439",
+  appId: "1:193173086439:web:48ddcaa968d22a14394242",
+  measurementId: "G-M3VNWX673T",
+  databaseURL:
+    "https://project-map-374713-default-rtdb.asia-southeast1.firebasedatabase.app",
 };
 
 if (getApps().length === 0) {
