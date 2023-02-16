@@ -19,6 +19,7 @@ import Profile from "../screens/home/Profile";
 import Vehicle from "../screens/home/Vehicle";
 import Map from "../screens/home/Map";
 import { API_KEY } from "../config/constants";
+import { getDatabase } from "firebase/database";
 
 // Better put your these secret keys in .env file
 const firebaseConfig = {
@@ -28,8 +29,10 @@ const firebaseConfig = {
     storageBucket: "project-map-374713.appspot.com",
     messagingSenderId: "193173086439",
     appId: "1:193173086439:web:48ddcaa968d22a14394242",
-    measurementId: "G-M3VNWX673T"
+    measurementId: "G-M3VNWX673T",
+    databaseURL: "https://project-map-374713-default-rtdb.asia-southeast1.firebasedatabase.app",
 };
+
 if (getApps().length === 0) {
   initializeApp(firebaseConfig);
 }

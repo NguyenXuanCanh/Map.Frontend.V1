@@ -25,7 +25,11 @@ export default function ({ navigation }) {
 
   async function login() {
     setLoading(true);
-    await signInWithEmailAndPassword(auth, email, password).catch(function (
+    await signInWithEmailAndPassword(auth, email, password)
+    .then((res)=>{
+        // console.log(res)
+    })
+    .catch(function (
       error
     ) {
       // Handle Errors here.
