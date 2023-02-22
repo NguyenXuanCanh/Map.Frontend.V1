@@ -48,6 +48,8 @@ export default function ({ navigation }) {
       }}
     >
       <TopNav
+        backgroundColor="#A19CFF"
+        borderColor="#A19CFF"
         middleContent="Vehicle"
         leftContent={
           <Ionicons

@@ -10,8 +10,9 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
-import { Dimensions, StyleSheet, View } from "react-native";
+import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
 import MapAutocomplete from "../../components/MapAutoComplete";
+import RouteList from "../../components/RouteList";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -79,6 +80,8 @@ export default function ({ navigation }) {
   return (
     <Layout>
       <TopNav
+        backgroundColor="#A19CFF"
+        borderColor="#A19CFF"
         middleContent="Map"
         leftContent={
           <Ionicons
@@ -98,14 +101,46 @@ export default function ({ navigation }) {
         {placeSelect && <Marker coordinate={placeSelect} />}
       </MapView>
       <View style={styles.searchContainer}>
-        <MapAutocomplete
-          styles={styles}
-          label={"Go to"}
-          onPlaceSelect={(details) => {
-            onPlaceSelect(details);
+        <ScrollView
+          style={{
+            height: "35%",
+            paddingTop: 10,
           }}
-        />
-        <Button onPress={() => navigation.navigate("Home")} text="Go to Home" />
+        >
+          <Text
+            style={{ alignSelf: "center", color: themeColor.white }}
+            size="lg"
+          >
+            Package ID: #111
+          </Text>
+
+          <View
+            style={{
+              width: "100%",
+              minHeight: 300,
+              marginTop: 10,
+              padding: 10,
+              borderRadius: 20,
+              backgroundColor: themeColor.white,
+            }}
+          >
+            <Text size="md" fontWeight="bold">
+              Package Status
+            </Text>
+            <RouteList />
+          </View>
+          {/* <MapAutocomplete
+            styles={styles}
+            label={"Go to"}
+            onPlaceSelect={(details) => {
+              onPlaceSelect(details);
+            }}
+          />
+          <Button
+            onPress={() => navigation.navigate("Home")}
+            text="Go to Home"
+          /> */}
+        </ScrollView>
       </View>
     </Layout>
   );
@@ -120,18 +155,12 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").height,
   },
   searchContainer: {
-    position: "absolute",
-    width: "90%",
-    backgroundColor: "white",
-    shadowColor: "black",
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 4,
-    padding: 8,
-    top: 68,
-    left: 8,
-    borderRadius: 8,
+    width: "100%",
+    backgroundColor: "#A19CFF",
+    borderColor: "#A19CFF",
+    borderWidth: 2,
+    marginTop: "auto",
+    borderRadius: 20,
     zIndex: 1000,
   },
   textInput: {

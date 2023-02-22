@@ -20,6 +20,7 @@ import Vehicle from "../screens/home/Vehicle";
 import Map from "../screens/home/Map";
 import { API_KEY } from "../config/constants";
 import { getDatabase } from "firebase/database";
+import Notification from "../screens/home/Notification";
 
 // Better put your these secret keys in .env file
 const firebaseConfig = {
@@ -67,6 +68,7 @@ const Main = () => {
       <MainStack.Screen name="History" component={History} />
       <MainStack.Screen name="Profile" component={Profile} />
       <MainStack.Screen name="Vehicle" component={Vehicle} />
+      <MainStack.Screen name="Notification" component={Notification} />
       <MainStack.Screen name="Map" component={Map} />
     </MainStack.Navigator>
   );

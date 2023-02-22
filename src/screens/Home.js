@@ -27,7 +27,7 @@ export default function ({ navigation }) {
         <TopNav
           rightContent={
             <Ionicons
-              name="log-out-outline"
+              name="log-out"
               size={20}
               color={isDarkmode ? themeColor.white100 : themeColor.dark}
               onPress={() => {
@@ -37,17 +37,13 @@ export default function ({ navigation }) {
           }
           leftContent={
             <Ionicons
-              name={isDarkmode ? "sunny" : "moon"}
+              name="notifications"
               size={20}
               color={isDarkmode ? themeColor.white100 : themeColor.dark}
             />
           }
           leftAction={() => {
-            if (isDarkmode) {
-              setTheme("light");
-            } else {
-              setTheme("dark");
-            }
+            navigation.navigate("Notification");
           }}
           backgroundColor="#A19CFF"
           borderColor="#A19CFF"
@@ -62,7 +58,11 @@ export default function ({ navigation }) {
             //   backgroundColor: "black"
           }}
         >
-          <Text fontWeight="light" style={{ textAlign: "center" }} size="sm">
+          <Text
+            fontWeight="light"
+            style={{ textAlign: "center", color: themeColor.white }}
+            size="sm"
+          >
             This app is working in
           </Text>
           <Text

@@ -11,9 +11,9 @@ import {
   TopNav,
   useTheme,
 } from "react-native-rapi-ui";
-import HistoryItem from "../../components/HistoryItem";
+import NotiItem from "../../components/NotiItem";
 
-export default function History({ navigation }) {
+export default function Notification({ navigation }) {
   const { isDarkmode, setTheme } = useTheme();
 
   return (
@@ -30,7 +30,7 @@ export default function History({ navigation }) {
         <TopNav
           backgroundColor="#A19CFF"
           borderColor="#A19CFF"
-          middleContent="History"
+          middleContent="Notification"
           leftContent={
             <Ionicons
               name="chevron-back"
@@ -49,29 +49,7 @@ export default function History({ navigation }) {
                 paddingTop: 10,
               }}
             >
-              <HistoryItem
-                style={{
-                  borderBottomColor: "#f0f0f0",
-                  borderBottomWidth: 1,
-                  paddingBottom: 20,
-                }}
-                address="23 Tran Cao Van"
-                status="Da giao"
-                time="12 thg 2, 2:10 CH"
-                total="23000"
-              />
-              <HistoryItem
-                style={{
-                  borderBottomColor: "#f0f0f0",
-                  borderBottomWidth: 1,
-                  paddingBottom: 20,
-                  marginTop: 20,
-                }}
-                address="23 Tran Cao Van"
-                status="Da giao"
-                time="12 thg 2, 2:10 CH"
-                total="23000"
-              />
+              <NotiItem />
             </View>
           </SectionContent>
         </Section>

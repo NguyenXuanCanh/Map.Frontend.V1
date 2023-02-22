@@ -14,6 +14,8 @@ export default function ({ navigation }) {
   return (
     <Layout>
       <TopNav
+        backgroundColor="#A19CFF"
+        borderColor="#A19CFF"
         middleContent="Second Screen"
         leftContent={
           <Ionicons
