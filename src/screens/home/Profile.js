@@ -17,10 +17,11 @@ import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, get } from "firebase/database";
 import { AuthContext } from "../../provider/AuthProvider";
 import { getAuth } from "firebase/auth";
+const auth = getAuth();
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
-  const currentUser = getAuth().currentUser;
+  const currentUser = auth.currentUser;
   const [info, setInfo] = useState({});
 
   const dbRef = ref(getDatabase());
@@ -39,6 +40,29 @@ export default function ({ navigation }) {
         console.error(error);
       });
   }, []);
+
+  updateProfile(auth.currentUser, {
+    // displayName: "Jane Q. User",
+    photoURL: "https://example.com/jane-q-user/profile.jpg",
+  })
+    .then(() => {
+      // Profile updated!
+      // ...
+    })
+    .catch((error) => {
+      // An error occurred
+      // ...
+    });
+
+  updateEmail(auth.currentUser, "user@example.com")
+    .then(() => {
+      // Email updated!
+      // ...
+    })
+    .catch((error) => {
+      // An error occurred
+      // ...
+    });
 
   return (
     <Layout
