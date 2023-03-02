@@ -16,53 +16,77 @@ import InfoRow from "../../components/InfoRow";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, child, get } from "firebase/database";
 import { AuthContext } from "../../provider/AuthProvider";
-import { getAuth } from "firebase/auth";
-const auth = getAuth();
+import { getAuth, updateEmail, updateProfile } from "firebase/auth";
+import ModalEdit from "../../components/ModalEdit";
 
 export default function ({ navigation }) {
+  const auth = getAuth();
   const { isDarkmode } = useTheme();
-  const currentUser = auth.currentUser;
   const [info, setInfo] = useState({});
 
+  const [isModalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [key, setKey] = useState("");
+
+  const toggleModal = (key, title) => {
+    setModalVisible(!isModalVisible);
+    setKey(key);
+    setModalTitle(title);
+  };
   const dbRef = ref(getDatabase());
 
   useEffect(() => {
-    get(child(dbRef, `user/${currentUser.uid}`))
-      .then((snapshot) => {
-        if (snapshot.exists()) {
-          console.log(snapshot.val());
-          setInfo(snapshot.val());
-        } else {
-          console.log("No data available");
-        }
-      })
-      .catch((error) => {
-        console.error(error);
+    if (auth.currentUser) {
+      setInfo({
+        displayName: auth.currentUser.displayName,
+        email: auth.currentUser.email,
+        phoneNumber: auth.currentUser.phoneNumber,
+        photoURL:
+          auth.currentUser.photoURL ==
+          "https://example.com/jane-q-user/profile.jpg"
+            ? "https://mui.com/static/images/avatar/1.jpg"
+            : auth.currentUser.photoURL,
+        uid: auth.currentUser.uid,
       });
+    }
   }, []);
 
-  updateProfile(auth.currentUser, {
-    // displayName: "Jane Q. User",
-    photoURL: "https://example.com/jane-q-user/profile.jpg",
-  })
-    .then(() => {
-      // Profile updated!
-      // ...
-    })
-    .catch((error) => {
-      // An error occurred
-      // ...
-    });
-
-  updateEmail(auth.currentUser, "user@example.com")
-    .then(() => {
-      // Email updated!
-      // ...
-    })
-    .catch((error) => {
-      // An error occurred
-      // ...
-    });
+  const updateProfileAuth = (key, value) => {
+    if (key == "email") {
+      updateEmail(auth.currentUser, value)
+        .then(() => {
+          console.log(auth.currentUser);
+          setInfo({
+            ...info,
+            email: auth.currentUser.email,
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      updateProfile(auth.currentUser, {
+        [key]: value,
+      })
+        .then(() => {
+          console.log(auth.currentUser);
+          setInfo({
+            displayName: auth.currentUser.displayName,
+            email: auth.currentUser.email,
+            phoneNumber: auth.currentUser.phoneNumber,
+            photoURL:
+              auth.currentUser.photoURL ==
+              "https://example.com/jane-q-user/profile.jpg"
+                ? "https://mui.com/static/images/avatar/1.jpg"
+                : auth.currentUser.photoURL,
+            uid: auth.currentUser.uid,
+          });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  };
 
   return (
     <Layout
@@ -99,18 +123,50 @@ export default function ({ navigation }) {
               height: 150,
               borderRadius: 100,
             }}
-            source={{ uri: "https://mui.com/static/images/avatar/1.jpg" }}
+            source={{ uri: info?.photoURL }}
           />
         </View>
         <View style={{ paddingVertical: 10, paddingHorizontal: 30 }}>
           <InfoRow
             title="Name"
-            value={info?.name}
-            startIcon="person"
-            endIcon="create"
+            value={info?.displayName}
+            startIcon="person-outline"
+            endIcon="create-outline"
+            onChange={() => {
+              toggleModal("displayName", "Update name");
+            }}
+          />
+          <InfoRow
+            title="Email"
+            value={info?.email}
+            startIcon="mail-outline"
+            endIcon="create-outline"
+            style={{ marginTop: 20 }}
+            onChange={() => {
+              toggleModal("email", "Update email");
+            }}
+          />
+          <InfoRow
+            title="Phone"
+            value={info?.phoneNumber}
+            startIcon="call-outline"
+            endIcon="create-outline"
+            style={{ marginTop: 20 }}
+            onChange={() => {
+              toggleModal("phoneNumber", "Update phone");
+            }}
           />
         </View>
       </ScrollView>
+      <ModalEdit
+        isVisible={isModalVisible}
+        onClose={toggleModal}
+        title={modalTitle}
+        onChange={(value) => {
+          updateProfileAuth(key, value);
+          setModalVisible(false);
+        }}
+      />
     </Layout>
   );
 }

@@ -2,18 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
 import Modal from "react-native-modal";
-import {
-  Avatar,
-  Button,
-  Layout,
-  Section,
-  SectionContent,
-  Text,
-  TextInput,
-  themeColor,
-  TopNav,
-  useTheme,
-} from "react-native-rapi-ui";
+import { Layout, themeColor, TopNav, useTheme } from "react-native-rapi-ui";
 import InfoRow from "../../components/InfoRow";
 import ModalEdit from "../../components/ModalEdit";
 
@@ -32,13 +21,8 @@ export default function ({ navigation }) {
 
   const toggleModal = (key, title) => {
     setModalVisible(!isModalVisible);
-    // if (!isModalVisible) {
     setKey(key);
     setModalTitle(title);
-    // } else {
-    //   setKey("");
-    //   setModalTitle("");
-    // }
   };
 
   return (
