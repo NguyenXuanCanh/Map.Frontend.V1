@@ -9,10 +9,19 @@ import {
 } from "react-native-rapi-ui";
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
 import MapAutocomplete from "../../components/MapAutoComplete";
 import RouteList from "../../components/RouteList";
+import { DEV_OUTPUT, OUTPUT } from "../../libs/output";
+import {
+  API_KEY,
+  BASE_URL,
+  DEFAULT_STORE_LOCATION,
+} from "../../config/constants";
+import axios from "axios";
+import Loading from "../utils/Loading";
+import MapViewDirections from "react-native-maps-directions";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -20,41 +29,66 @@ export default function ({ navigation }) {
   const ASPECT_RATIO = width / height;
   const LATITUDE_DELTA = 0.02;
   const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
+  const VEHICLEID = 1;
+  const DELTA = {
+    latitudeDelta: LATITUDE_DELTA,
+    longitudeDelta: LONGITUDE_DELTA,
+  };
   const INIT_POSITION = {
     coords: {
-      latitude: 10.748629,
-      longitude: 106.67765,
-      latitudeDelta: LATITUDE_DELTA,
-      longitudeDelta: LONGITUDE_DELTA,
+      latitude: DEFAULT_STORE_LOCATION.coords.latitude,
+      longitude: DEFAULT_STORE_LOCATION.coords.longitude,
     },
   };
   const [placeSelect, setPlaceSelect] = useState();
   const [location, setLocation] = useState(null);
-  const [errorMsg, setErrorMsg] = useState(null);
-
+  const [output, setOutput] = useState(OUTPUT);
+  const [loading, setLoading] = useState(false);
+  const [routes, setRoutes] = useState();
+  const [next, setNext] = useState();
   useEffect(() => {
+    setLoading(true);
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== "granted") {
-        setErrorMsg("Permission to access location was denied");
+        console.log("Permission to access location was denied");
         return;
       }
-
       let location = await Location.getCurrentPositionAsync({});
-      location.coords.latitudeDelta = LATITUDE_DELTA;
-      location.coords.longitudeDelta = LONGITUDE_DELTA;
-      setLocation(location);
+      const position = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      setLoading(false);
+      setLocation(position);
+      setPlaceSelect(position);
+      moveTo(position);
     })();
+    // axios({
+    //   method: "get",
+    //   url: `${BASE_URL}/getTrip`,
+    // })
+    //   .then((response) => {
+    //     console.log(response);
+    //   })
+    //   .catch((err) => {
+    //     // console.log(err);
+    //     setOutput(DEV_OUTPUT);
+    //   });
   }, []);
-
-  let text = "Waiting..";
-
-  if (errorMsg) {
-    text = errorMsg;
-  } else if (location) {
-    text = JSON.stringify(location);
-  }
-
+  useEffect(() => {
+    if (output.routes) {
+      setRoutes(output.routes.filter((item) => item.vehicle == VEHICLEID)[0]);
+    }
+  }, [output]);
+  useEffect(() => {
+    if (routes && routes.steps?.length) {
+      setNext({
+        latitude: routes.steps[0].location[1] || 0,
+        longitude: routes.steps[0].location[0] || 0,
+      });
+    }
+  }, [routes]);
   const mapRef = useRef();
 
   const moveTo = async (position) => {
@@ -65,18 +99,17 @@ export default function ({ navigation }) {
     }
   };
 
-  const onPlaceSelect = (details) => {
-    console.log(details);
-    const position = {
-      latitude: details?.geometry.location.lat || 0,
-      longitude: details?.geometry.location.lng || 0,
-    };
-    setPlaceSelect(position);
-    moveTo(position);
-  };
-
-  console.log(text);
-
+  useEffect(() => {
+    if (location && location.length) {
+      const position = {
+        latitude: location[1] || 0,
+        longitude: location[0] || 0,
+      };
+      setPlaceSelect(position);
+      moveTo(position);
+    }
+  }, [location]);
+  //   console.log(OUTPUT);
   return (
     <Layout>
       <TopNav
@@ -92,14 +125,40 @@ export default function ({ navigation }) {
         }
         leftAction={() => navigation.goBack()}
       />
-      <MapView
-        ref={mapRef}
-        style={styles.map}
-        provider={PROVIDER_GOOGLE}
-        initialRegion={location ? location.coords : INIT_POSITION.coords}
-      >
-        {placeSelect && <Marker coordinate={placeSelect} />}
-      </MapView>
+      {loading ? (
+        <Loading />
+      ) : (
+        <MapView
+          ref={mapRef}
+          style={styles.map}
+          provider={PROVIDER_GOOGLE}
+          region={
+            location
+              ? { ...location, ...DELTA }
+              : { ...INIT_POSITION.coords, ...DELTA }
+          }
+        >
+          {placeSelect && (
+            <>
+              {/* <MapViewDirections
+                origin={placeSelect}
+                destination={next}
+                apikey={API_KEY} // insert your API Key here
+                strokeWidth={4}
+                strokeColor="#111111"
+              /> */}
+              <Marker coordinate={placeSelect} title="Your location" />
+              <Marker coordinate={next} title="Next target" />
+              <Polyline
+                coordinates={[placeSelect, next]}
+                strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
+                strokeColors={["#7F0000"]}
+                strokeWidth={6}
+              />
+            </>
+          )}
+        </MapView>
+      )}
       <View style={styles.searchContainer}>
         <ScrollView
           style={{
@@ -111,7 +170,7 @@ export default function ({ navigation }) {
             style={{ alignSelf: "center", color: themeColor.white }}
             size="lg"
           >
-            Package ID: #111
+            Package List
           </Text>
 
           <View
@@ -125,9 +184,9 @@ export default function ({ navigation }) {
             }}
           >
             <Text size="md" fontWeight="bold">
-              Package Status
+              Packages
             </Text>
-            <RouteList />
+            <RouteList routes={routes} setLocation={setLocation} />
           </View>
           {/* <MapAutocomplete
             styles={styles}

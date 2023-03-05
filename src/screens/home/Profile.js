@@ -43,7 +43,8 @@ export default function ({ navigation }) {
         phoneNumber: auth.currentUser.phoneNumber,
         photoURL:
           auth.currentUser.photoURL ==
-          "https://example.com/jane-q-user/profile.jpg"
+            "https://example.com/jane-q-user/profile.jpg" ||
+          !auth.currentUser.photoURL
             ? "https://mui.com/static/images/avatar/1.jpg"
             : auth.currentUser.photoURL,
         uid: auth.currentUser.uid,
