@@ -1,5 +1,5 @@
-// export const API_KEY = "AIzaSyCr1d-jfg2inxW_TfPOAVkIKVJMdefhxIc";
-export const API_KEY = "AIzaSyAjL_qi0y0XVH6pBYtPQgNxTb9wusUJZCE";
+export const API_KEY = "AIzaSyCr1d-jfg2inxW_TfPOAVkIKVJMdefhxIc";
+// export const API_KEY = "AIzaSyAjL_qi0y0XVH6pBYtPQgNxTb9wusUJZCE";
 
 export const DEFAULT_STORE_LOCATION = {
   coords: {

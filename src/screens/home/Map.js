@@ -22,6 +22,7 @@ import {
 import axios from "axios";
 import Loading from "../utils/Loading";
 import MapViewDirections from "react-native-maps-directions";
+import { test_out } from "../../libs/test";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -46,6 +47,7 @@ export default function ({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [routes, setRoutes] = useState();
   const [next, setNext] = useState();
+  const [test, setTest] = useState([]);
   useEffect(() => {
     setLoading(true);
     (async () => {
@@ -64,6 +66,15 @@ export default function ({ navigation }) {
       setPlaceSelect(position);
       moveTo(position);
     })();
+    test_out.features[0].geometry.coordinates.map((item) => {
+      const pos = {
+        latitude: item[0] || 0,
+        longitude: item[1] || 0,
+      };
+      let newa = test.push(pos);
+      if (test.length > 50) return;
+      setTest(newa);
+    });
     // axios({
     //   method: "get",
     //   url: `${BASE_URL}/getTrip`,
@@ -88,6 +99,7 @@ export default function ({ navigation }) {
         longitude: routes.steps[0].location[0] || 0,
       });
     }
+    console.log(test);
   }, [routes]);
   const mapRef = useRef();
 
@@ -150,7 +162,8 @@ export default function ({ navigation }) {
               <Marker coordinate={placeSelect} title="Your location" />
               <Marker coordinate={next} title="Next target" />
               <Polyline
-                coordinates={[placeSelect, next]}
+                // coordinates={[placeSelect, next]}
+                coordinates={test}
                 strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
                 strokeColors={["#7F0000"]}
                 strokeWidth={6}
