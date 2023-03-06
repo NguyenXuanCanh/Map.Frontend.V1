@@ -23,7 +23,7 @@ export default function RouteList(props) {
               setLocation(item.location);
             }}
           >
-            <Row key={item.id}>
+            <Row>
               <Col numRows={3}>
                 <View
                   style={{

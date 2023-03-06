@@ -21,7 +21,6 @@ import {
 } from "../../config/constants";
 import axios from "axios";
 import Loading from "../utils/Loading";
-import MapViewDirections from "react-native-maps-directions";
 import { test_out } from "../../libs/test";
 
 export default function ({ navigation }) {
@@ -66,32 +65,14 @@ export default function ({ navigation }) {
       setPlaceSelect(position);
       moveTo(position);
     })();
-    test_out.features[0].geometry.coordinates.map((item) => {
-      const pos = {
-        latitude: item[0] || 0,
-        longitude: item[1] || 0,
-      };
-      let newa = test.push(pos);
-      if (test.length > 50) return;
-      setTest(newa);
-    });
-    // axios({
-    //   method: "get",
-    //   url: `${BASE_URL}/getTrip`,
-    // })
-    //   .then((response) => {
-    //     console.log(response);
-    //   })
-    //   .catch((err) => {
-    //     // console.log(err);
-    //     setOutput(DEV_OUTPUT);
-    //   });
   }, []);
+
   useEffect(() => {
     if (output.routes) {
       setRoutes(output.routes.filter((item) => item.vehicle == VEHICLEID)[0]);
     }
   }, [output]);
+
   useEffect(() => {
     if (routes && routes.steps?.length) {
       setNext({
@@ -101,6 +82,41 @@ export default function ({ navigation }) {
     }
     console.log(test);
   }, [routes]);
+
+  const getDataRoute = ()=>{
+    return axios({
+        method: "get",
+        url: `${BASE_URL}/getRoute?point=[${placeSelect.latitude},${placeSelect.longitude}]&point=[${next.latitude},${next.longitude}]&vehicle=car`,
+    })
+    
+  }
+
+  useEffect(()=>{
+    if(placeSelect && next){
+        getDataRoute().then((response) => {
+            const newVal=response?.data?.coordinates?.map((item) => {
+                const pos = {
+                    latitude: item[1] || 0,
+                    longitude: item[0] || 0,
+                };
+                return pos;
+            });
+            setTest(newVal.slice(0,12));
+        })
+        .catch((err) => {
+            console.log(err);
+            const newVal=test_out?.coordinates?.map((item) => {
+                const pos = {
+                    latitude: item[1] || 0,
+                    longitude: item[0] || 0,
+                };
+                return pos;
+            });
+            setTest(newVal.slice(0,12));
+        });
+    }
+  },[placeSelect, next])
+
   const mapRef = useRef();
 
   const moveTo = async (position) => {
@@ -150,7 +166,7 @@ export default function ({ navigation }) {
               : { ...INIT_POSITION.coords, ...DELTA }
           }
         >
-          {placeSelect && (
+          {(placeSelect && test.length) && (
             <>
               {/* <MapViewDirections
                 origin={placeSelect}
@@ -159,10 +175,11 @@ export default function ({ navigation }) {
                 strokeWidth={4}
                 strokeColor="#111111"
               /> */}
-              <Marker coordinate={placeSelect} title="Your location" />
+              <Marker coordinate={
+                placeSelect
+              } title="Your location" />
               <Marker coordinate={next} title="Next target" />
               <Polyline
-                // coordinates={[placeSelect, next]}
                 coordinates={test}
                 strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
                 strokeColors={["#7F0000"]}
