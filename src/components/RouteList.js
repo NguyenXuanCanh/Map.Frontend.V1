@@ -5,22 +5,25 @@ import { Button, Text, themeColor, useTheme } from "react-native-rapi-ui";
 import { Col, Row } from "./Flex";
 
 export default function RouteList(props) {
-  const { routes, setLocation } = props;
+  const { routes, setLocation, packageActive, setPackageActive } = props;
   const { isDarkmode } = useTheme();
-  const [packageActive, setPackageActive] = useState(9);
+  //   console.log(packageActive);
   return (
     <View>
-      {routes?.steps?.map((item) => {
-        if (item.type !== "job") return <Text></Text>;
+      {routes?.steps?.map((item, index) => {
+        if (item.type !== "job") return null;
         const isActive = item.id == packageActive;
         return (
           <TouchableOpacity
-            key={item.id}
+            key={index}
             style={isActive ? styles.packageActive : styles.package}
             onPress={() => {
               //   console.log(item.location);
               setPackageActive(item.id);
-              setLocation(item.location);
+              setLocation({
+                latitude: item.location[1] || 0,
+                longitude: item.location[0] || 0,
+              });
             }}
           >
             <Row>

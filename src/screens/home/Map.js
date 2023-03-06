@@ -47,18 +47,24 @@ export default function ({ navigation }) {
   const [routes, setRoutes] = useState();
   const [next, setNext] = useState();
   const [test, setTest] = useState([]);
+  const [step, setStep] = useState(0);
+  const [packageActive, setPackageActive] = useState();
   useEffect(() => {
     setLoading(true);
     (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        console.log("Permission to access location was denied");
-        return;
-      }
-      let location = await Location.getCurrentPositionAsync({});
+      //   let { status } = await Location.requestForegroundPermissionsAsync();
+      //   if (status !== "granted") {
+      //     console.log("Permission to access location was denied");
+      //     return;
+      //   }
+      //   let location = await Location.getCurrentPositionAsync({});
+      //   const position = {
+      //     latitude: location.coords.latitude,
+      //     longitude: location.coords.longitude,
+      //   };
       const position = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
+        latitude: 10.7480016,
+        longitude: 106.6763347,
       };
       setLoading(false);
       setLocation(position);
@@ -76,46 +82,49 @@ export default function ({ navigation }) {
   useEffect(() => {
     if (routes && routes.steps?.length) {
       setNext({
-        latitude: routes.steps[0].location[1] || 0,
-        longitude: routes.steps[0].location[0] || 0,
+        latitude: routes.steps[step].location[1] || 0,
+        longitude: routes.steps[step].location[0] || 0,
       });
+      setPackageActive(routes.steps[step + 1].id);
     }
   }, [routes]);
 
-  const getDataRoute = ()=>{
+  const getDataRoute = () => {
     return axios({
-        method: "get",
-        // url: `${BASE_URL}/getRoute?point=[${placeSelect.latitude},${placeSelect.longitude}]&point=[${next.latitude},${next.longitude}]&vehicle=car`,
-        url: `https://rsapi.goong.io/Direction?origin=${placeSelect.latitude},${placeSelect.longitude}&destination=${next.latitude},${next.longitude}&vehicle=car&api_key=rvWoa97j8PhzM5VUA0cr1IGNNNm5X81HoIN8GET6`,
-    })
-    
-  }
+      method: "get",
+      // url: `${BASE_URL}/getRoute?point=[${placeSelect.latitude},${placeSelect.longitude}]&point=[${next.latitude},${next.longitude}]&vehicle=car`,
+      url: `https://rsapi.goong.io/Direction?origin=${placeSelect.latitude},${placeSelect.longitude}&destination=${next.latitude},${next.longitude}&vehicle=car&api_key=rvWoa97j8PhzM5VUA0cr1IGNNNm5X81HoIN8GET6`,
+    });
+  };
 
-  useEffect(()=>{
-    if(placeSelect && next){
-        getDataRoute().then((response) => {
-            const newVal=stringToGETJSON(response.data.routes[0].overview_polyline.points)?.coordinates?.map((item) => {
-                const pos = {
-                    latitude: item[1] || 0,
-                    longitude: item[0] || 0,
-                };
-                return pos;
-            });
-            setTest(newVal);
+  useEffect(() => {
+    if (placeSelect && next) {
+      getDataRoute()
+        .then((response) => {
+          const newVal = stringToGETJSON(
+            response.data.routes[0].overview_polyline.points
+          )?.coordinates?.map((item) => {
+            const pos = {
+              latitude: item[1] || 0,
+              longitude: item[0] || 0,
+            };
+            return pos;
+          });
+          setTest(newVal);
         })
         .catch((err) => {
-            console.log("run errr");
-            const newVal=test_out?.coordinates?.map((item) => {
-                const pos = {
-                    latitude: item[1] || 0,
-                    longitude: item[0] || 0,
-                };
-                return pos;
-            });
-            setTest(newVal);
+          console.log("run errr");
+          const newVal = test_out?.coordinates?.map((item) => {
+            const pos = {
+              latitude: item[1] || 0,
+              longitude: item[0] || 0,
+            };
+            return pos;
+          });
+          setTest(newVal);
         });
     }
-  },[placeSelect, next])
+  }, [placeSelect, next]);
 
   const mapRef = useRef();
 
@@ -137,6 +146,18 @@ export default function ({ navigation }) {
       moveTo(position);
     }
   }, [location]);
+
+  const toNextStep = () => {
+    const globalStep = (step + 1) % (routes.steps.length - 1);
+    setStep(globalStep);
+    setPackageActive(routes.steps[globalStep + 1].id);
+    setPlaceSelect(next);
+    setNext({
+      latitude: routes.steps[globalStep].location[1] || 0,
+      longitude: routes.steps[globalStep].location[0] || 0,
+    });
+  };
+
   return (
     <Layout>
       <TopNav
@@ -165,7 +186,7 @@ export default function ({ navigation }) {
               : { ...INIT_POSITION.coords, ...DELTA }
           }
         >
-          {(placeSelect && test.length) ? (
+          {placeSelect && test.length ? (
             <>
               <Marker coordinate={placeSelect} title="Your location" />
               <Marker coordinate={next} title="Next target" />
@@ -176,7 +197,7 @@ export default function ({ navigation }) {
                 strokeWidth={6}
               />
             </>
-          ):null}
+          ) : null}
         </MapView>
       )}
       <View style={styles.searchContainer}>
@@ -192,7 +213,7 @@ export default function ({ navigation }) {
           >
             Package List
           </Text>
-
+          <Button onPress={toNextStep} text="Next" />
           <View
             style={{
               width: "100%",
@@ -206,7 +227,12 @@ export default function ({ navigation }) {
             <Text size="md" fontWeight="bold">
               Packages
             </Text>
-            <RouteList routes={routes} setLocation={setLocation} />
+            <RouteList
+              routes={routes}
+              setLocation={setNext}
+              packageActive={packageActive}
+              setPackageActive={setPackageActive}
+            />
           </View>
         </ScrollView>
       </View>
