@@ -21,7 +21,7 @@ import {
 } from "../../config/constants";
 import axios from "axios";
 import Loading from "../utils/Loading";
-import { test_out } from "../../libs/test";
+import { stringToGETJSON, test_out } from "../../libs/test";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -80,13 +80,13 @@ export default function ({ navigation }) {
         longitude: routes.steps[0].location[0] || 0,
       });
     }
-    console.log(test);
   }, [routes]);
 
   const getDataRoute = ()=>{
     return axios({
         method: "get",
-        url: `${BASE_URL}/getRoute?point=[${placeSelect.latitude},${placeSelect.longitude}]&point=[${next.latitude},${next.longitude}]&vehicle=car`,
+        // url: `${BASE_URL}/getRoute?point=[${placeSelect.latitude},${placeSelect.longitude}]&point=[${next.latitude},${next.longitude}]&vehicle=car`,
+        url: `https://rsapi.goong.io/Direction?origin=${placeSelect.latitude},${placeSelect.longitude}&destination=${next.latitude},${next.longitude}&vehicle=car&api_key=rvWoa97j8PhzM5VUA0cr1IGNNNm5X81HoIN8GET6`,
     })
     
   }
@@ -94,17 +94,17 @@ export default function ({ navigation }) {
   useEffect(()=>{
     if(placeSelect && next){
         getDataRoute().then((response) => {
-            const newVal=response?.data?.coordinates?.map((item) => {
+            const newVal=stringToGETJSON(response.data.routes[0].overview_polyline.points)?.coordinates?.map((item) => {
                 const pos = {
                     latitude: item[1] || 0,
                     longitude: item[0] || 0,
                 };
                 return pos;
             });
-            setTest(newVal.slice(0,12));
+            setTest(newVal);
         })
         .catch((err) => {
-            console.log(err);
+            console.log("run errr");
             const newVal=test_out?.coordinates?.map((item) => {
                 const pos = {
                     latitude: item[1] || 0,
@@ -112,7 +112,7 @@ export default function ({ navigation }) {
                 };
                 return pos;
             });
-            setTest(newVal.slice(0,12));
+            setTest(newVal);
         });
     }
   },[placeSelect, next])
@@ -137,7 +137,6 @@ export default function ({ navigation }) {
       moveTo(position);
     }
   }, [location]);
-  //   console.log(OUTPUT);
   return (
     <Layout>
       <TopNav
@@ -166,18 +165,9 @@ export default function ({ navigation }) {
               : { ...INIT_POSITION.coords, ...DELTA }
           }
         >
-          {(placeSelect && test.length) && (
+          {(placeSelect && test.length) ? (
             <>
-              {/* <MapViewDirections
-                origin={placeSelect}
-                destination={next}
-                apikey={API_KEY} // insert your API Key here
-                strokeWidth={4}
-                strokeColor="#111111"
-              /> */}
-              <Marker coordinate={
-                placeSelect
-              } title="Your location" />
+              <Marker coordinate={placeSelect} title="Your location" />
               <Marker coordinate={next} title="Next target" />
               <Polyline
                 coordinates={test}
@@ -186,7 +176,7 @@ export default function ({ navigation }) {
                 strokeWidth={6}
               />
             </>
-          )}
+          ):null}
         </MapView>
       )}
       <View style={styles.searchContainer}>
@@ -218,17 +208,6 @@ export default function ({ navigation }) {
             </Text>
             <RouteList routes={routes} setLocation={setLocation} />
           </View>
-          {/* <MapAutocomplete
-            styles={styles}
-            label={"Go to"}
-            onPlaceSelect={(details) => {
-              onPlaceSelect(details);
-            }}
-          />
-          <Button
-            onPress={() => navigation.navigate("Home")}
-            text="Go to Home"
-          /> */}
         </ScrollView>
       </View>
     </Layout>

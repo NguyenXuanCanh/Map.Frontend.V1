@@ -11,7 +11,7 @@ export default function RouteList(props) {
   return (
     <View>
       {routes?.steps?.map((item) => {
-        if (item.type !== "job") return <></>;
+        if (item.type !== "job") return <Text></Text>;
         const isActive = item.id == packageActive;
         return (
           <TouchableOpacity
