@@ -14,8 +14,8 @@ export default function ({ navigation }) {
   const truckInfo = {
     id: "123443123",
     license: "62G1-11111",
-    ownerName: "Cảnh",
-    dimension: "1111",
+    owner_name: "Cảnh",
+    tank_volume: "1111",
     weight: "1111",
   };
 
@@ -82,22 +82,22 @@ export default function ({ navigation }) {
           />
           <InfoRow
             title="Tên chủ xe"
-            value={truckInfo.ownerName}
+            value={truckInfo.owner_name}
             startIcon="person"
             endIcon="create"
             style={{ marginTop: 20 }}
             onChange={() => {
-              toggleModal("ownerName", "Thay đổi tên chủ xe");
+              toggleModal("owner_name", "Thay đổi tên chủ xe");
             }}
           />
           <InfoRow
             title="Kích thước thùng xe"
-            value={truckInfo.dimension + "(KG)"}
+            value={truckInfo.tank_volume + "(KG)"}
             startIcon="cube"
             endIcon="create"
             style={{ marginTop: 20 }}
             onChange={() => {
-              toggleModal("dimension", "Thay đổi kích thước thùng");
+              toggleModal("tank_volume", "Thay đổi kích thước thùng");
             }}
           />
           <InfoRow

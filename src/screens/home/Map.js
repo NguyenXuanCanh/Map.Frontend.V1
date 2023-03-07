@@ -10,7 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import * as Location from "expo-location";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
-import { Dimensions, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
 import MapAutocomplete from "../../components/MapAutoComplete";
 import RouteList from "../../components/RouteList";
 import { DEV_OUTPUT, OUTPUT } from "../../libs/output";
@@ -22,6 +22,9 @@ import {
 import axios from "axios";
 import Loading from "../utils/Loading";
 import { stringToGETJSON, test_out } from "../../libs/test";
+import iconMarker from "../../../assets/radio-button-on-outline.png";
+import iconCube from "../../../assets/cube-outline.png";
+import iconStore from "../../../assets/storefront-outline.png";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -46,8 +49,8 @@ export default function ({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [routes, setRoutes] = useState();
   const [next, setNext] = useState();
-  const [test, setTest] = useState([]);
-  const [step, setStep] = useState(0);
+  const [route, setRoute] = useState([]);
+  const [step, setStep] = useState(1); // skip start
   const [packageActive, setPackageActive] = useState();
   useEffect(() => {
     setLoading(true);
@@ -63,8 +66,8 @@ export default function ({ navigation }) {
       //     longitude: location.coords.longitude,
       //   };
       const position = {
-        latitude: 10.7480016,
-        longitude: 106.6763347,
+        latitude: 10.75906974788975 || 0, //106.66025161743164, 10.75906974788975
+        longitude:106.66025161743164 || 0,
       };
       setLoading(false);
       setLocation(position);
@@ -85,7 +88,7 @@ export default function ({ navigation }) {
         latitude: routes.steps[step].location[1] || 0,
         longitude: routes.steps[step].location[0] || 0,
       });
-      setPackageActive(routes.steps[step + 1].id);
+      setPackageActive(routes.steps[step].id);
     }
   }, [routes]);
 
@@ -110,7 +113,7 @@ export default function ({ navigation }) {
             };
             return pos;
           });
-          setTest(newVal);
+          setRoute(newVal);
         })
         .catch((err) => {
           console.log("run errr");
@@ -121,7 +124,7 @@ export default function ({ navigation }) {
             };
             return pos;
           });
-          setTest(newVal);
+          setRoute(newVal);
         });
     }
   }, [placeSelect, next]);
@@ -149,15 +152,16 @@ export default function ({ navigation }) {
 
   const toNextStep = () => {
     const globalStep = (step + 1) % (routes.steps.length - 1);
+    if(globalStep==routes.steps.length) globalStep=0; //skip end
     setStep(globalStep);
-    setPackageActive(routes.steps[globalStep + 1].id);
+    setPackageActive(routes.steps[globalStep].id);
     setPlaceSelect(next);
     setNext({
       latitude: routes.steps[globalStep].location[1] || 0,
       longitude: routes.steps[globalStep].location[0] || 0,
     });
   };
-
+  
   return (
     <Layout>
       <TopNav
@@ -186,14 +190,30 @@ export default function ({ navigation }) {
               : { ...INIT_POSITION.coords, ...DELTA }
           }
         >
-          {placeSelect && test.length ? (
+          {placeSelect && route.length ? (
             <>
-              <Marker coordinate={placeSelect} title="Your location" />
+              <Marker coordinate={placeSelect} title="Your location" >
+                <Image source={iconMarker} style={{height: 20, width: 20}} />
+              </Marker>
               <Marker coordinate={next} title="Next target" />
+               {routes.steps.map((item, index)=>{
+                if(item.type=="start") return <Marker coordinate={{
+                    latitude: item.location[1] || 0,
+                    longitude: item.location[0] || 0,
+                  }} title="index" key={index} >
+                    <Image source={iconStore} style={{height: 20, width: 20}} />
+                </Marker>
+                else if(index!=step && index!=(step-1) && item.type=="job") return <Marker coordinate={{
+                    latitude: item.location[1] || 0,
+                    longitude: item.location[0] || 0,
+                  }} title="index" key={index} >
+                    <Image source={iconCube} style={{height: 20, width: 20}} />
+                </Marker>
+               })}
               <Polyline
-                coordinates={test}
-                strokeColor="#000" // fallback for when `strokeColors` is not supported by the map-provider
-                strokeColors={["#7F0000"]}
+                coordinates={route}
+                strokeColor="#469af7" // fallback for when `strokeColors` is not supported by the map-provider
+                // strokeColors={["#7F0000"]}
                 strokeWidth={6}
               />
             </>
@@ -225,7 +245,7 @@ export default function ({ navigation }) {
             }}
           >
             <Text size="md" fontWeight="bold">
-              Packages
+              Next locations
             </Text>
             <RouteList
               routes={routes}
