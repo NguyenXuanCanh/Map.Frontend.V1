@@ -8,12 +8,12 @@ import {
   Button,
 } from "react-native-rapi-ui";
 import { Ionicons } from "@expo/vector-icons";
-import * as Location from "expo-location";
+// import * as Location from "expo-location";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
-import MapAutocomplete from "../../components/MapAutoComplete";
+// import MapAutocomplete from "../../components/MapAutoComplete";
 import RouteList from "../../components/RouteList";
-import { DEV_OUTPUT, OUTPUT } from "../../libs/output";
+// import { DEV_OUTPUT, OUTPUT } from "../../libs/output";
 import {
   API_KEY,
   BASE_URL,
@@ -45,7 +45,7 @@ export default function ({ navigation }) {
   };
   const [placeSelect, setPlaceSelect] = useState();
   const [location, setLocation] = useState(null);
-  const [output, setOutput] = useState(OUTPUT);
+  const [packageList, setPackageList] = useState();
   const [loading, setLoading] = useState(false);
   const [routes, setRoutes] = useState();
   const [next, setNext] = useState();
@@ -55,32 +55,34 @@ export default function ({ navigation }) {
   useEffect(() => {
     setLoading(true);
     (async () => {
-      //   let { status } = await Location.requestForegroundPermissionsAsync();
-      //   if (status !== "granted") {
-      //     console.log("Permission to access location was denied");
-      //     return;
-      //   }
-      //   let location = await Location.getCurrentPositionAsync({});
-      //   const position = {
-      //     latitude: location.coords.latitude,
-      //     longitude: location.coords.longitude,
-      //   };
+        async function fetchData() {
+            const response = await axios.get(`${BASE_URL}/trip`);
+            return response;
+        }
+        fetchData()
+        .then((response)=>{
+            console.log(response.data.data)
+            setPackageList(response.data.data)
+        }).catch((error)=>{
+            console.log(error)
+        });
+    })();
+  }, []);
+
+  useEffect(() => {
+    if (packageList && packageList?.routes) {
+        const routes_temp=packageList.routes.filter((item) => item.vehicle == VEHICLEID)[0];
+      setRoutes(routes_temp);
       const position = {
-        latitude: 10.75906974788975 || 0, //106.66025161743164, 10.75906974788975
-        longitude:106.66025161743164 || 0,
+          latitude: routes_temp.steps[0].location[1] || 0,
+          longitude: routes_temp.steps[0].location[0] || 0,
       };
       setLoading(false);
       setLocation(position);
       setPlaceSelect(position);
       moveTo(position);
-    })();
-  }, []);
-
-  useEffect(() => {
-    if (output.routes) {
-      setRoutes(output.routes.filter((item) => item.vehicle == VEHICLEID)[0]);
     }
-  }, [output]);
+  }, [packageList]);
 
   useEffect(() => {
     if (routes && routes.steps?.length) {
@@ -129,16 +131,6 @@ export default function ({ navigation }) {
     }
   }, [placeSelect, next]);
 
-  const mapRef = useRef();
-
-  const moveTo = async (position) => {
-    const camera = await mapRef.current?.getCamera();
-    if (camera) {
-      camera.center = position;
-      mapRef.current?.animateCamera(camera, { duration: 1000 });
-    }
-  };
-
   useEffect(() => {
     if (location && location.length) {
       const position = {
@@ -162,6 +154,16 @@ export default function ({ navigation }) {
     });
   };
   
+  const mapRef = useRef();
+
+  const moveTo = async (position) => {
+    const camera = await mapRef.current?.getCamera();
+    if (camera) {
+      camera.center = position;
+      mapRef.current?.animateCamera(camera, { duration: 1000 });
+    }
+  };
+
   return (
     <Layout>
       <TopNav

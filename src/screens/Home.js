@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View, Linking, KeyboardAvoidingView, StatusBar } from "react-native";
 import { getAuth, signOut } from "firebase/auth";
 import {
@@ -14,12 +14,23 @@ import {
 } from "react-native-rapi-ui";
 import { Ionicons } from "@expo/vector-icons";
 import { Col, Row } from "../components/Flex";
+import axios from "axios";
 
 export default function ({ navigation }) {
   const { isDarkmode, setTheme } = useTheme();
   const [searchText, setSearchText] = useState("");
   const auth = getAuth();
+    // useEffect(async ()=>{
+    //     async function fetchData() {
+    //         // You can await here
+    //         const response = await MyAPI.getData(someId);
+    //         // ...
+    //         return response;
+    //     }
+    //     fetchData().then(()=>{
 
+    //     });
+    // },[])
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <StatusBar animated={true} backgroundColor="#A19CFF" />
@@ -131,8 +142,8 @@ export default function ({ navigation }) {
                     text={
                       <>
                         <Text size="xl" fontWeight="bold">
-                          Go to Map
-                        </Text>{" "}
+                          My Work Map
+                        </Text>{"             "}
                         <Text size="sm">Ex ea Lorem deserunt ipsum qui.</Text>
                       </>
                     }
@@ -144,7 +155,7 @@ export default function ({ navigation }) {
                     text={
                       <>
                         <Text size="xl" fontWeight="bold">
-                          Go to History
+                          History
                         </Text>{" "}
                         <Text size="sm">Ex ea Lorem deserunt ipsum qui.</Text>
                       </>
@@ -179,7 +190,7 @@ export default function ({ navigation }) {
                     text={
                       <>
                         <Text size="xl" fontWeight="bold">
-                          Go to Vehicle
+                          My Vehicle
                         </Text>{" "}
                         <Text size="sm">Ex ea Lorem deserunt ipsum qui.</Text>
                       </>
@@ -196,7 +207,7 @@ export default function ({ navigation }) {
                     text={
                       <>
                         <Text size="xl" fontWeight="bold">
-                          Go to Profile
+                          My Contact
                         </Text>
                         {"     "}
                         <Text size="sm">Ex ea Lorem deserunt ipsum qui.</Text>

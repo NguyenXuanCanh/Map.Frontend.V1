@@ -18,6 +18,8 @@ import { getDatabase, ref, child, get } from "firebase/database";
 import { AuthContext } from "../../provider/AuthProvider";
 import { getAuth, updateEmail, updateProfile } from "firebase/auth";
 import ModalEdit from "../../components/ModalEdit";
+import Loading from "../utils/Loading";
+import * as ImagePicker from 'expo-image-picker';
 
 export default function ({ navigation }) {
   const auth = getAuth();
@@ -27,6 +29,8 @@ export default function ({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [key, setKey] = useState("");
+  const [loading, setLoading]=useState(false);
+  const [image, setImage] = useState(null);
 
   const toggleModal = (key, title) => {
     setModalVisible(!isModalVisible);
@@ -36,21 +40,41 @@ export default function ({ navigation }) {
   const dbRef = ref(getDatabase());
 
   useEffect(() => {
-    if (auth.currentUser) {
-      setInfo({
-        displayName: auth.currentUser.displayName,
-        email: auth.currentUser.email,
-        phoneNumber: auth.currentUser.phoneNumber,
-        photoURL:
-          auth.currentUser.photoURL ==
-            "https://example.com/jane-q-user/profile.jpg" ||
-          !auth.currentUser.photoURL
-            ? "https://mui.com/static/images/avatar/1.jpg"
-            : auth.currentUser.photoURL,
-        uid: auth.currentUser.uid,
-      });
-    }
+    setLoading(true);
+    (async () => {
+        if (auth.currentUser) {
+            setInfo({
+              displayName: auth.currentUser.displayName,
+              email: auth.currentUser.email,
+              phoneNumber: auth.currentUser.phoneNumber,
+              photoURL:
+                auth.currentUser.photoURL ==
+                  "https://example.com/jane-q-user/profile.jpg" ||
+                !auth.currentUser.photoURL
+                  ? "https://mui.com/static/images/avatar/1.jpg"
+                  : auth.currentUser.photoURL,
+              uid: auth.currentUser.uid,
+            });
+        }
+        setLoading(false);
+    })();
   }, []);
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 4],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
 
   const updateProfileAuth = (key, value) => {
     if (key == "email") {
@@ -88,7 +112,7 @@ export default function ({ navigation }) {
         });
     }
   };
-
+  console.log(info)
   return (
     <Layout
       style={{
@@ -98,7 +122,7 @@ export default function ({ navigation }) {
       <TopNav
         backgroundColor="#A19CFF"
         borderColor="#A19CFF"
-        middleContent={info?.name}
+        middleContent={info?.displayName}
         leftContent={
           <Ionicons
             name="chevron-back"
@@ -108,57 +132,71 @@ export default function ({ navigation }) {
         }
         leftAction={() => navigation.goBack()}
       />
+      {loading ?
+      <Loading/>
+      : 
       <ScrollView contentContainerStyle={{}}>
-        <View
+      <View
+        style={{
+          flex: 1,
+          alignItems: "center",
+          justifyContent: "flex-end",
+          padding: 15,
+        }}
+      >
+        <Image
+          resizeMode="cover"
           style={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "flex-end",
-            padding: 15,
+            width: 150,
+            height: 150,
+            borderRadius: 100,
           }}
-        >
-          <Image
-            resizeMode="cover"
-            style={{
-              width: 150,
-              height: 150,
-              borderRadius: 100,
-            }}
-            source={{ uri: info?.photoURL }}
-          />
-        </View>
-        <View style={{ paddingVertical: 10, paddingHorizontal: 30 }}>
-          <InfoRow
-            title="Name"
-            value={info?.displayName}
-            startIcon="person-outline"
-            endIcon="create-outline"
-            onChange={() => {
-              toggleModal("displayName", "Update name");
-            }}
-          />
-          <InfoRow
-            title="Email"
-            value={info?.email}
-            startIcon="mail-outline"
-            endIcon="create-outline"
-            style={{ marginTop: 20 }}
-            onChange={() => {
-              toggleModal("email", "Update email");
-            }}
-          />
-          <InfoRow
-            title="Phone"
-            value={info?.phoneNumber}
-            startIcon="call-outline"
-            endIcon="create-outline"
-            style={{ marginTop: 20 }}
-            onChange={() => {
-              toggleModal("phoneNumber", "Update phone");
-            }}
-          />
-        </View>
-      </ScrollView>
+          source={{ uri: info?.photoURL }}
+        />
+        <Button text="Pick an image from camera roll" onPress={pickImage} />
+      {image && <Image
+          resizeMode="cover"
+          style={{
+            width: 150,
+            height: 150,
+            borderRadius: 100,
+          }}
+          source={{ uri: image }}
+        />}
+      </View>
+      <View style={{ paddingVertical: 10, paddingHorizontal: 30 }}>
+        <InfoRow
+          title="Name"
+          value={info?.displayName}
+          startIcon="person-outline"
+          endIcon="create-outline"
+          onChange={() => {
+            toggleModal("displayName", "Update name");
+          }}
+        />
+        <InfoRow
+          title="Email"
+          value={info?.email}
+          startIcon="mail-outline"
+          endIcon="create-outline"
+          style={{ marginTop: 20 }}
+          onChange={() => {
+            toggleModal("email", "Update email");
+          }}
+        />
+        <InfoRow
+          title="Phone"
+          value={info?.phoneNumber}
+          startIcon="call-outline"
+          endIcon="create-outline"
+          style={{ marginTop: 20 }}
+          onChange={() => {
+            toggleModal("phoneNumber", "Update phone");
+          }}
+        />
+      </View>
+    </ScrollView>
+      }
       <ModalEdit
         isVisible={isModalVisible}
         onClose={toggleModal}
