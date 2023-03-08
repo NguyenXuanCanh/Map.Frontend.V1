@@ -13,7 +13,6 @@ import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
 // import MapAutocomplete from "../../components/MapAutoComplete";
 import RouteList from "../../components/RouteList";
-// import { DEV_OUTPUT, OUTPUT } from "../../libs/output";
 import {
   API_KEY,
   BASE_URL,
@@ -21,10 +20,11 @@ import {
 } from "../../config/constants";
 import axios from "axios";
 import Loading from "../utils/Loading";
-import { stringToGETJSON, test_out } from "../../libs/test";
+import { stringToGETJSON } from "../../libs/StringToJSON";
 import iconMarker from "../../../assets/radio-button-on-outline.png";
 import iconCube from "../../../assets/cube-outline.png";
 import iconStore from "../../../assets/storefront-outline.png";
+import { getAuth } from "firebase/auth";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -52,30 +52,34 @@ export default function ({ navigation }) {
   const [route, setRoute] = useState([]);
   const [step, setStep] = useState(1); // skip start
   const [packageActive, setPackageActive] = useState();
+  const auth = getAuth();
+
   useEffect(() => {
     setLoading(true);
     (async () => {
-        async function fetchData() {
-            const response = await axios.get(`${BASE_URL}/trip`);
-            return response;
-        }
-        fetchData()
-        .then((response)=>{
-            console.log(response.data.data)
-            setPackageList(response.data.data)
-        }).catch((error)=>{
-            console.log(error)
+      async function fetchData() {
+        const response = await axios.get(`${BASE_URL}/trip`);
+        return response;
+      }
+      fetchData()
+        .then((response) => {
+          setPackageList(response.data.data);
+        })
+        .catch((error) => {
+          console.log(error);
         });
     })();
   }, []);
 
   useEffect(() => {
     if (packageList && packageList?.routes) {
-        const routes_temp=packageList.routes.filter((item) => item.vehicle == VEHICLEID)[0];
+      const routes_temp = packageList.routes.filter(
+        (item) => item.vehicle == VEHICLEID
+      )[0];
       setRoutes(routes_temp);
       const position = {
-          latitude: routes_temp.steps[0].location[1] || 0,
-          longitude: routes_temp.steps[0].location[0] || 0,
+        latitude: routes_temp.steps[0].location[1] || 0,
+        longitude: routes_temp.steps[0].location[0] || 0,
       };
       setLoading(false);
       setLocation(position);
@@ -119,14 +123,6 @@ export default function ({ navigation }) {
         })
         .catch((err) => {
           console.log("run errr");
-          const newVal = test_out?.coordinates?.map((item) => {
-            const pos = {
-              latitude: item[1] || 0,
-              longitude: item[0] || 0,
-            };
-            return pos;
-          });
-          setRoute(newVal);
         });
     }
   }, [placeSelect, next]);
@@ -143,8 +139,9 @@ export default function ({ navigation }) {
   }, [location]);
 
   const toNextStep = () => {
+    insertToHistory(routes.steps[step].id);
     const globalStep = (step + 1) % (routes.steps.length - 1);
-    if(globalStep==routes.steps.length) globalStep=0; //skip end
+    if (globalStep == routes.steps.length) globalStep = 0; //skip end
     setStep(globalStep);
     setPackageActive(routes.steps[globalStep].id);
     setPlaceSelect(next);
@@ -153,7 +150,23 @@ export default function ({ navigation }) {
       longitude: routes.steps[globalStep].location[0] || 0,
     });
   };
-  
+
+  const insertToHistory = (package_id) => {
+    const submitData = {
+      account_id: auth.currentUser.uid,
+      package_id: package_id,
+      date: new Date(),
+    };
+    axios
+      .post(`${BASE_URL}/history_add`, submitData)
+      .then((res) => {
+        // console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
+
   const mapRef = useRef();
 
   const moveTo = async (position) => {
@@ -194,24 +207,48 @@ export default function ({ navigation }) {
         >
           {placeSelect && route.length ? (
             <>
-              <Marker coordinate={placeSelect} title="Your location" >
-                <Image source={iconMarker} style={{height: 20, width: 20}} />
+              <Marker coordinate={placeSelect} title="Your location">
+                <Image source={iconMarker} style={{ height: 20, width: 20 }} />
               </Marker>
               <Marker coordinate={next} title="Next target" />
-               {routes.steps.map((item, index)=>{
-                if(item.type=="start") return <Marker coordinate={{
-                    latitude: item.location[1] || 0,
-                    longitude: item.location[0] || 0,
-                  }} title="index" key={index} >
-                    <Image source={iconStore} style={{height: 20, width: 20}} />
-                </Marker>
-                else if(index!=step && index!=(step-1) && item.type=="job") return <Marker coordinate={{
-                    latitude: item.location[1] || 0,
-                    longitude: item.location[0] || 0,
-                  }} title="index" key={index} >
-                    <Image source={iconCube} style={{height: 20, width: 20}} />
-                </Marker>
-               })}
+              {routes.steps.map((item, index) => {
+                if (item.type == "start")
+                  return (
+                    <Marker
+                      coordinate={{
+                        latitude: item.location[1] || 0,
+                        longitude: item.location[0] || 0,
+                      }}
+                      title="index"
+                      key={index}
+                    >
+                      <Image
+                        source={iconStore}
+                        style={{ height: 20, width: 20 }}
+                      />
+                    </Marker>
+                  );
+                else if (
+                  index != step &&
+                  index != step - 1 &&
+                  item.type == "job"
+                )
+                  return (
+                    <Marker
+                      coordinate={{
+                        latitude: item.location[1] || 0,
+                        longitude: item.location[0] || 0,
+                      }}
+                      title="index"
+                      key={index}
+                    >
+                      <Image
+                        source={iconCube}
+                        style={{ height: 20, width: 20 }}
+                      />
+                    </Marker>
+                  );
+              })}
               <Polyline
                 coordinates={route}
                 strokeColor="#469af7" // fallback for when `strokeColors` is not supported by the map-provider
