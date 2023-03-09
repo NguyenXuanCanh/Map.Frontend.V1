@@ -161,11 +161,22 @@ export default function ({ navigation }) {
       .post(`${BASE_URL}/history_add`, submitData)
       .then((res) => {
         // console.log(res);
+        setDisable(package_id);
       })
       .catch((err) => {
         console.log(err);
       });
   };
+
+  const setDisable = (package_id)=>{
+    setRoutes({steps: routes.steps.map((item)=>{
+        if(item.id!=package_id){
+            return item
+        }else{
+            return {...item, status: 'success'}
+        }
+    })});
+  }
 
   const mapRef = useRef();
 
@@ -287,7 +298,7 @@ export default function ({ navigation }) {
               Next locations
             </Text>
             <RouteList
-              routes={routes}
+              steps={routes?.steps}
               setLocation={setNext}
               packageActive={packageActive}
               setPackageActive={setPackageActive}

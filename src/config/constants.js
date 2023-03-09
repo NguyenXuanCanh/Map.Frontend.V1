@@ -8,4 +8,4 @@ export const DEFAULT_STORE_LOCATION = {
   },
 };
 
-export const BASE_URL = "http://192.168.1.13:8080";
+export const BASE_URL = "http://192.168.67.232:8080";
