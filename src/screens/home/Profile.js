@@ -20,6 +20,7 @@ import { getAuth, updateEmail, updateProfile } from "firebase/auth";
 import ModalEdit from "../../components/ModalEdit";
 import Loading from "../utils/Loading";
 import * as ImagePicker from 'expo-image-picker';
+import axios from "axios";
 
 export default function ({ navigation }) {
   const auth = getAuth();
@@ -37,7 +38,6 @@ export default function ({ navigation }) {
     setKey(key);
     setModalTitle(title);
   };
-  const dbRef = ref(getDatabase());
 
   useEffect(() => {
     setLoading(true);
@@ -65,14 +65,32 @@ export default function ({ navigation }) {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
+      base64: true,
       aspect: [4, 4],
       quality: 1,
     });
-
-    console.log(result);
-
+    
     if (!result.canceled) {
-      setImage(result.assets[0].uri);
+        const postData={
+            key: '0000348ef95624d3901a3921384d57d2',
+            action: 'upload',
+            source: result.assets[0].base64,
+            format: 'txt'
+        }
+        let formData = new FormData();
+        formData.append('key', postData.key);
+        formData.append('media', postData.source);
+
+        axios.post(`https://thumbsnap.com/api/upload`,formData)
+        .then((res)=>{
+            // delete res.config.data._parts;
+            console.log(res.config.data._parts[1])
+        })
+        .catch((err)=>{
+            console.log(err)
+        })
+    
+    //   setImage(result.assets[0].uri);
     }
   };
 
@@ -112,7 +130,7 @@ export default function ({ navigation }) {
         });
     }
   };
-  console.log(info)
+//   console.log(info)
   return (
     <Layout
       style={{
