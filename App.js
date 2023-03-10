@@ -3,6 +3,7 @@ import AppNavigator from "./src/navigation/AppNavigator";
 import { AuthProvider } from "./src/provider/AuthProvider";
 import { ThemeProvider } from "react-native-rapi-ui";
 import { LogBox, Platform, SafeAreaView, StatusBar } from "react-native";
+import { RecoilRoot } from "recoil";
 
 export default function App(props) {
   const images = [
@@ -22,9 +23,11 @@ export default function App(props) {
 
   return (
     <ThemeProvider images={images}>
-      <AuthProvider>
+        <RecoilRoot>
+        <AuthProvider>
         <AppNavigator />
       </AuthProvider>
+        </RecoilRoot>
     </ThemeProvider>
   );
 }

@@ -15,22 +15,48 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { Col, Row } from "../components/Flex";
 import axios from "axios";
+import { isClockIn } from "../atoms/clock";
+import { useRecoilState } from "recoil";
+import ModalClockIn from "../components/ModalClockIn";
+import Loading from "./utils/Loading";
+import { BASE_URL } from "../config/constants";
 
 export default function ({ navigation }) {
   const { isDarkmode, setTheme } = useTheme();
   const [searchText, setSearchText] = useState("");
   const auth = getAuth();
-    // useEffect(async ()=>{
-    //     async function fetchData() {
-    //         // You can await here
-    //         const response = await MyAPI.getData(someId);
-    //         // ...
-    //         return response;
-    //     }
-    //     fetchData().then(()=>{
+  const [isClockedIn, setIsClockedIn] = useRecoilState(isClockIn);
+  const [isVisible, setVisible] = useState(true);
+  const [loading, setLoading]=useState(false);
 
-    //     });
-    // },[])
+  useEffect(() => {
+    setLoading(true);
+    (async () => {
+        async function fetchData() {
+            const response = await axios.get(`${BASE_URL}/clockin_status/${auth.currentUser.uid}`);
+            return response;
+        }
+        if(auth.currentUser){
+            fetchData()
+        .then((response)=>{
+            console.log(response.data.data)
+            setIsClockedIn(res.data)
+            setLoading(false)
+        }).catch((error)=>{
+            console.log(error)
+        });
+        }
+        setLoading(false);
+    })();
+  }, []);
+
+  useEffect(()=>{
+    if(isClockedIn){
+        console.log(isClockedIn)
+        setVisible(false);
+    }
+  },[isClockedIn])
+
   return (
     <KeyboardAvoidingView behavior="height" enabled style={{ flex: 1 }}>
       <StatusBar animated={true} backgroundColor="#A19CFF" />
@@ -59,6 +85,11 @@ export default function ({ navigation }) {
           backgroundColor="#A19CFF"
           borderColor="#A19CFF"
         />
+        {loading ? 
+        <Loading/>
+        : 
+        <>
+        <ModalClockIn isVisible={isVisible} onClose={()=>{setVisible(false)}} />
         <View
           style={{
             flex: 2,
@@ -232,6 +263,9 @@ export default function ({ navigation }) {
             </SectionContent>
           </Section>
         </View>
+        </>
+        }
+        
       </Layout>
     </KeyboardAvoidingView>
   );
