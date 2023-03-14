@@ -50,7 +50,7 @@ export default function ({ navigation }) {
   const [routes, setRoutes] = useState();
   const [next, setNext] = useState();
   const [route, setRoute] = useState([]);
-  const [step, setStep] = useState(1); // skip start
+  const [step, setStep] = useState(1); // skip start as defaut
   const [packageActive, setPackageActive] = useState();
   const auth = getAuth();
 
@@ -58,11 +58,14 @@ export default function ({ navigation }) {
     setLoading(true);
     (async () => {
       async function fetchData() {
-        const response = await axios.get(`${BASE_URL}/trip`);
+        const response = await axios.get(
+          `${BASE_URL}/trip/${auth.currentUser.uid}`
+        );
         return response;
       }
       fetchData()
         .then((response) => {
+          //   console.log(response.data);
           setPackageList(response.data.data);
         })
         .catch((error) => {
@@ -76,6 +79,9 @@ export default function ({ navigation }) {
       const routes_temp = packageList.routes.filter(
         (item) => item.vehicle == VEHICLEID
       )[0];
+      //   console.log(packageList);
+
+      //   const routes_temp = packageList.routes[0];
       setRoutes(routes_temp);
       const position = {
         latitude: routes_temp.steps[0].location[1] || 0,
@@ -168,15 +174,17 @@ export default function ({ navigation }) {
       });
   };
 
-  const setDisable = (package_id)=>{
-    setRoutes({steps: routes.steps.map((item)=>{
-        if(item.id!=package_id){
-            return item
-        }else{
-            return {...item, status: 'success'}
+  const setDisable = (package_id) => {
+    setRoutes({
+      steps: routes.steps.map((item) => {
+        if (item.id != package_id) {
+          return item;
+        } else {
+          return { ...item, status: "success" };
         }
-    })});
-  }
+      }),
+    });
+  };
 
   const mapRef = useRef();
 
@@ -283,7 +291,13 @@ export default function ({ navigation }) {
           >
             Package List
           </Text>
-          <Button onPress={toNextStep} text="Next" />
+          <Button
+            onPress={toNextStep}
+            // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
+            text="Next"
+            style={{ marginTop: 10, backgroundColor: themeColor.white }}
+            status="primary"
+          />
           <View
             style={{
               width: "100%",

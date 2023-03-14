@@ -18,7 +18,7 @@ import { BASE_URL } from "../../config/constants";
 import Loading from "../utils/Loading";
 
 export default function History({ navigation }) {
-  const { isDarkmode, setTheme } = useTheme();
+  const { isDarkmode } = useTheme();
   const [loading, setLoading] = useState(false);
   const [listHistory, setListHistory] = useState();
 
@@ -53,28 +53,27 @@ export default function History({ navigation }) {
         minHeight: "100%",
       }}
     >
-      {loading ? (
-        <Loading />
-      ) : (
-        <ScrollView
-          contentContainerStyle={{
-            minHeight: "100%",
-          }}
-        >
-          <TopNav
-            backgroundColor="#A19CFF"
-            borderColor="#A19CFF"
-            middleContent="History"
-            leftContent={
-              <Ionicons
-                name="chevron-back"
-                size={20}
-                color={isDarkmode ? themeColor.white100 : themeColor.black}
-              />
-            }
-            leftAction={() => navigation.goBack()}
-          />
-
+      <ScrollView
+        contentContainerStyle={{
+          minHeight: "100%",
+        }}
+      >
+        <TopNav
+          backgroundColor="#A19CFF"
+          borderColor="#A19CFF"
+          middleContent="History"
+          leftContent={
+            <Ionicons
+              name="chevron-back"
+              size={20}
+              color={isDarkmode ? themeColor.white100 : themeColor.black}
+            />
+          }
+          leftAction={() => navigation.goBack()}
+        />
+        {loading ? (
+          <Loading />
+        ) : (
           <Section>
             <SectionContent>
               <View
@@ -121,8 +120,8 @@ export default function History({ navigation }) {
               </View>
             </SectionContent>
           </Section>
-        </ScrollView>
-      )}
+        )}
+      </ScrollView>
     </Layout>
   );
 }
