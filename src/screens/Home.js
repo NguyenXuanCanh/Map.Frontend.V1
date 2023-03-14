@@ -32,8 +32,8 @@ export default function ({ navigation }) {
   const auth = getAuth();
   const [isClockedIn, setIsClockedIn] = useRecoilState(isClockIn);
   const [isVisible, setVisible] = useState(true);
-  const [loading, setLoading]=useState(false);
-  const [listNoti, setListNoti]=useState([]);
+  const [loading, setLoading] = useState(false);
+  const [listNoti, setListNoti] = useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -47,7 +47,8 @@ export default function ({ navigation }) {
       if (auth.currentUser) {
         fetchData()
           .then((response) => {
-            setIsClockedIn(response.data.data);
+            if (response.data && response.data.data.status == "1")
+              setIsClockedIn(response.data.data);
             setLoading(false);
           })
           .catch((error) => {
@@ -58,23 +59,26 @@ export default function ({ navigation }) {
     })();
   }, []);
 
-  useEffect(()=>{
-    setLoading(true)
-    if(isClockedIn){
-        async function fetchData() {
-            const response = await axios.get(`${BASE_URL}/notification/${auth.currentUser.uid}`);
-            return response;
-        }
-        fetchData()
-        .then((response)=>{
-            if(response.data.data){
-                setListNoti(response.data)
-            }
-            setLoading(false)
-        }).catch((error)=>{
-            console.log(error)
+  useEffect(() => {
+    setLoading(true);
+    if (isClockedIn) {
+      async function fetchData() {
+        const response = await axios.get(
+          `${BASE_URL}/notification/${auth.currentUser.uid}`
+        );
+        return response;
+      }
+      fetchData()
+        .then((response) => {
+          if (response.data.data) {
+            setListNoti(response.data.data);
+          }
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.log(error);
         });
-        setVisible(false);
+      setVisible(false);
     }
   }, [isClockedIn]);
 
@@ -192,8 +196,15 @@ export default function ({ navigation }) {
                 Notifications
               </Text>
               <ScrollView style={{ width: "80%", marginTop: 20 }}>
-                {listNoti?.map((item, index)=>{
-                    if(index<4) return <NotiItem style={{ backgroundColor: "white" }} data={item} key={index}/>
+                {listNoti?.map((item, index) => {
+                  if (index < 4)
+                    return (
+                      <NotiItem
+                        style={{ backgroundColor: "white" }}
+                        data={item}
+                        key={index}
+                      />
+                    );
                 })}
               </ScrollView>
             </View>

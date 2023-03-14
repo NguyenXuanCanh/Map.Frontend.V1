@@ -16,10 +16,10 @@ export default function NotiItem(props) {
     >
       <View style={{ padding: 5 }}>
         <Text size="lg">
-          {data?.content}
-          {/* <Text status="warning" size="lg">
-            Waiting for Delivery
-          </Text> */}
+          {data?.type == "clockin" ? "You clock in at " : null}
+          <Text status="warning" size="sm">
+            {data?.time}
+          </Text>
         </Text>
       </View>
       <View
