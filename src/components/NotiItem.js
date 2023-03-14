@@ -6,7 +6,6 @@ import { Col, Row } from "./Flex";
 
 export default function NotiItem(props) {
   const { data, callback } = props;
-  const dt = new Date(data?.time);
   return (
     <TouchableOpacity
       style={styles.notiItem}
@@ -18,7 +17,7 @@ export default function NotiItem(props) {
         <Text size="lg">
           {data?.type == "clockin" ? "You clock in at " : null}
           <Text status="warning" size="sm">
-            {data?.time}
+            {data?.time.slice(11, 19)}, {data?.time.slice(0, 10)}
           </Text>
         </Text>
       </View>
@@ -32,7 +31,7 @@ export default function NotiItem(props) {
         <Row>
           <Col numRows={1}>
             <Text style={{ color: themeColor.gray300 }} size="lg">
-              {dt.getDate.toString()}
+              {data?.time.slice(0, 10)}
             </Text>
           </Col>
           <Col numRows={1}>
@@ -40,7 +39,7 @@ export default function NotiItem(props) {
               style={{ textAlign: "right", color: themeColor.gray300 }}
               size="lg"
             >
-              {dt.getTime.toString()}
+              {data?.time.slice(11, 19)}
             </Text>
           </Col>
         </Row>
