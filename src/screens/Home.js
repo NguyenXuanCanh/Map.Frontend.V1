@@ -47,8 +47,7 @@ export default function ({ navigation }) {
       if (auth.currentUser) {
         fetchData()
           .then((response) => {
-            console.log(response.data.data);
-            setIsClockedIn(res.data);
+            setIsClockedIn(response.data.data);
             setLoading(false);
           })
           .catch((error) => {
@@ -60,6 +59,7 @@ export default function ({ navigation }) {
   }, []);
 
   useEffect(()=>{
+    setLoading(true)
     if(isClockedIn){
         async function fetchData() {
             const response = await axios.get(`${BASE_URL}/notification/${auth.currentUser.uid}`);
@@ -67,7 +67,9 @@ export default function ({ navigation }) {
         }
         fetchData()
         .then((response)=>{
-            setListNoti(response.data)
+            if(response.data.data){
+                setListNoti(response.data)
+            }
             setLoading(false)
         }).catch((error)=>{
             console.log(error)
@@ -87,7 +89,7 @@ export default function ({ navigation }) {
       }
       async function updateClockinStatus() {
         const response = await axios.get(
-          `${BASE_URL}/update_clockin_status/${auth.currentUser.uid}/1`
+          `${BASE_URL}/clockin_status_update/${auth.currentUser.uid}/1`
         );
         return response;
       }

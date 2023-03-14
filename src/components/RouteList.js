@@ -11,7 +11,7 @@ export default function RouteList(props) {
   return (
     <>
       {steps?.map((item, index) => {
-        console.log(item)
+        // console.log(item)
         const isActive = item.id == packageActive;
         return <>
         {

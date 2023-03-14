@@ -52,6 +52,8 @@ export default function ({ navigation }) {
   const [route, setRoute] = useState([]);
   const [step, setStep] = useState(1); // skip start as defaut
   const [packageActive, setPackageActive] = useState();
+  const [nextActive, setNextActive]=useState(true);
+
   const auth = getAuth();
 
   useEffect(() => {
@@ -145,16 +147,20 @@ export default function ({ navigation }) {
   }, [location]);
 
   const toNextStep = () => {
-    insertToHistory(routes.steps[step].id);
-    const globalStep = (step + 1) % (routes.steps.length - 1);
-    if (globalStep == routes.steps.length) globalStep = 0; //skip end
-    setStep(globalStep);
-    setPackageActive(routes.steps[globalStep].id);
-    setPlaceSelect(next);
-    setNext({
-      latitude: routes.steps[globalStep].location[1] || 0,
-      longitude: routes.steps[globalStep].location[0] || 0,
-    });
+    if(routes.steps[step].id){
+        insertToHistory(routes.steps[step].id);
+        setNextActive(false);
+    }else{
+        const globalStep = (step + 1) % (routes.steps.length - 1);
+        if (globalStep == routes.steps.length) globalStep = 0; //skip end
+        setStep(globalStep);
+        setPackageActive(routes.steps[globalStep].id);
+        setPlaceSelect(next);
+        setNext({
+          latitude: routes.steps[globalStep].location[1] || 0,
+          longitude: routes.steps[globalStep].location[0] || 0,
+        });
+    }
   };
 
   const insertToHistory = (package_id) => {
@@ -270,8 +276,7 @@ export default function ({ navigation }) {
               })}
               <Polyline
                 coordinates={route}
-                strokeColor="#469af7" // fallback for when `strokeColors` is not supported by the map-provider
-                // strokeColors={["#7F0000"]}
+                strokeColor="#469af7"
                 strokeWidth={6}
               />
             </>
@@ -291,13 +296,22 @@ export default function ({ navigation }) {
           >
             Package List
           </Text>
+          {nextActive?
           <Button
-            onPress={toNextStep}
-            // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
-            text="Next"
-            style={{ marginTop: 10, backgroundColor: themeColor.white }}
-            status="primary"
-          />
+          onPress={toNextStep}
+          // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
+          text="Next"
+          style={{ marginTop: 10, backgroundColor: themeColor.white }}
+          status="primary"
+        />
+          : <Button
+        //   onPress={toNextStep}
+          // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
+          text="Success"
+          style={{ marginTop: 10, backgroundColor: themeColor.white }}
+          status="success"
+          disabled
+        />}
           <View
             style={{
               width: "100%",
