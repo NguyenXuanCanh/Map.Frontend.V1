@@ -22,12 +22,13 @@ import Loading from "./utils/Loading";
 import { BASE_URL } from "../config/constants";
 
 export default function ({ navigation }) {
-  const { isDarkmode, setTheme } = useTheme();
+  const { isDarkmode } = useTheme();
   const [searchText, setSearchText] = useState("");
   const auth = getAuth();
   const [isClockedIn, setIsClockedIn] = useRecoilState(isClockIn);
   const [isVisible, setVisible] = useState(true);
   const [loading, setLoading]=useState(false);
+  const [listNoti, setListNoti]=useState([]);
 
   useEffect(() => {
     setLoading(true);
@@ -52,7 +53,17 @@ export default function ({ navigation }) {
 
   useEffect(()=>{
     if(isClockedIn){
-        console.log(isClockedIn)
+        async function fetchData() {
+            const response = await axios.get(`${BASE_URL}/notification/${auth.currentUser.uid}`);
+            return response;
+        }
+        fetchData()
+        .then((response)=>{
+            setListNoti(response.data)
+            setLoading(false)
+        }).catch((error)=>{
+            console.log(error)
+        });
         setVisible(false);
     }
   },[isClockedIn])

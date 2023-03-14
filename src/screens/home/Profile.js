@@ -21,6 +21,7 @@ import ModalEdit from "../../components/ModalEdit";
 import Loading from "../utils/Loading";
 import * as ImagePicker from 'expo-image-picker';
 import axios from "axios";
+import userImage from "../../../assets/user-removebg.png"
 
 export default function ({ navigation }) {
   const auth = getAuth();
@@ -51,7 +52,7 @@ export default function ({ navigation }) {
                 auth.currentUser.photoURL ==
                   "https://example.com/jane-q-user/profile.jpg" ||
                 !auth.currentUser.photoURL
-                  ? "https://mui.com/static/images/avatar/1.jpg"
+                  ? "../../../assets/user-removebg.png"
                   : auth.currentUser.photoURL,
               uid: auth.currentUser.uid,
             });
@@ -171,7 +172,7 @@ export default function ({ navigation }) {
           }}
           source={{ uri: info?.photoURL }}
         />
-        <Button text="Pick an image from camera roll" onPress={pickImage} />
+        {/* <Button text="Pick an image from camera roll" onPress={pickImage} />
       {image && <Image
           resizeMode="cover"
           style={{
@@ -180,7 +181,7 @@ export default function ({ navigation }) {
             borderRadius: 100,
           }}
           source={{ uri: image }}
-        />}
+        />} */}
       </View>
       <View style={{ paddingVertical: 10, paddingHorizontal: 30 }}>
         <InfoRow
