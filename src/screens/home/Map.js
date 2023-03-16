@@ -8,16 +8,10 @@ import {
   Button,
 } from "react-native-rapi-ui";
 import { Ionicons } from "@expo/vector-icons";
-// import * as Location from "expo-location";
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from "react-native-maps";
 import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
-// import MapAutocomplete from "../../components/MapAutoComplete";
 import RouteList from "../../components/RouteList";
-import {
-  API_KEY,
-  BASE_URL,
-  DEFAULT_STORE_LOCATION,
-} from "../../config/constants";
+import { BASE_URL, DEFAULT_STORE_LOCATION } from "../../config/constants";
 import axios from "axios";
 import Loading from "../utils/Loading";
 import { stringToGETJSON } from "../../libs/StringToJSON";
@@ -67,7 +61,6 @@ export default function ({ navigation }) {
       }
       fetchData()
         .then((response) => {
-          //   console.log(response.data);
           setPackageList(response.data.data);
         })
         .catch((error) => {
@@ -82,7 +75,6 @@ export default function ({ navigation }) {
         (item) => item.vehicle == VEHICLEID
       )[0];
       //   console.log(packageList);
-
       //   const routes_temp = packageList.routes[0];
       setRoutes(routes_temp);
       const position = {
@@ -109,7 +101,6 @@ export default function ({ navigation }) {
   const getDataRoute = () => {
     return axios({
       method: "get",
-      // url: `${BASE_URL}/getRoute?point=[${placeSelect.latitude},${placeSelect.longitude}]&point=[${next.latitude},${next.longitude}]&vehicle=car`,
       url: `https://rsapi.goong.io/Direction?origin=${placeSelect.latitude},${placeSelect.longitude}&destination=${next.latitude},${next.longitude}&vehicle=car&api_key=rvWoa97j8PhzM5VUA0cr1IGNNNm5X81HoIN8GET6`,
     });
   };
@@ -309,7 +300,7 @@ export default function ({ navigation }) {
             <Button
               //   onPress={toNextStep}
               // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
-              text="Success"
+              text="Completed"
               style={{ marginTop: 10, backgroundColor: themeColor.white }}
               status="success"
               disabled

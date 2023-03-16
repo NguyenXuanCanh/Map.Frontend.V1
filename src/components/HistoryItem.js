@@ -34,7 +34,7 @@ export default function HistoryItem(props) {
             {toVND(total)}đ
           </Text>
         </View>
-        <Button text="See Detail" size="sm" />
+        {/* <Button text="See Detail" size="sm" /> */}
       </Col>
     </Row>
   );
