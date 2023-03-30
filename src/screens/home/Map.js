@@ -47,6 +47,7 @@ export default function ({ navigation }) {
   const [step, setStep] = useState(1); // skip start as defaut
   const [packageActive, setPackageActive] = useState();
   const [nextActive, setNextActive] = useState(true);
+  const [thisRoute, setThisRoute] = useState([]);
 
   const auth = getAuth();
 
@@ -71,46 +72,48 @@ export default function ({ navigation }) {
 
   useEffect(() => {
     if (packageList && packageList?.routes) {
-      const routes_temp = packageList.routes.filter(
-        (item) => item.vehicle == VEHICLEID
-      )[0];
-      //   console.log(packageList);
-      //   const routes_temp = packageList.routes[0];
-      setRoutes(routes_temp);
+      setRoutes(packageList.routes);
+
+      //   pass array location to this
+      getDataRoute(packageList.routes);
+
       const position = {
-        latitude: routes_temp.steps[0].location[1] || 0,
-        longitude: routes_temp.steps[0].location[0] || 0,
+        latitude: packageList.routes[0].location[1] || 0,
+        longitude: packageList.routes[0].location[0] || 0,
       };
       setLoading(false);
       setLocation(position);
-      setPlaceSelect(position);
+      //   setPlaceSelect(position);
       moveTo(position);
     }
   }, [packageList]);
 
   useEffect(() => {
-    if (routes && routes.steps?.length) {
-      setNext({
-        latitude: routes.steps[step].location[1] || 0,
-        longitude: routes.steps[step].location[0] || 0,
-      });
-      setPackageActive(routes.steps[step].id);
+    if (routes && routes?.length) {
+      //   setNext({
+      //     latitude: routes[step].location[1] || 0,
+      //     longitude: routes[step].location[0] || 0,
+      //   });
+      setPackageActive(routes[step].id);
     }
   }, [routes]);
 
-  const getDataRoute = () => {
-    return axios({
-      method: "get",
-      url: `https://rsapi.goong.io/Direction?origin=${placeSelect.latitude},${placeSelect.longitude}&destination=${next.latitude},${next.longitude}&vehicle=car&api_key=rvWoa97j8PhzM5VUA0cr1IGNNNm5X81HoIN8GET6`,
-    });
-  };
-
-  useEffect(() => {
-    if (placeSelect && next) {
-      getDataRoute()
-        .then((response) => {
+  const getDataRoute = async (localRoute) => {
+    localRoute.push(localRoute[0]);
+    for (let index = 0; index < localRoute.length; index++) {
+      axios({
+        method: "get",
+        url: `https://rsapi.goong.io/Direction?origin=${
+          localRoute[index].location[1]
+        },${localRoute[index].location[0]}&destination=${
+          localRoute[index + 1].location[1]
+        },${
+          localRoute[index + 1].location[0]
+        }&vehicle=car&api_key=rvWoa97j8PhzM5VUA0cr1IGNNNm5X81HoIN8GET6`,
+      })
+        .then((res) => {
           const newVal = stringToGETJSON(
-            response.data.routes[0].overview_polyline.points
+            res.data.routes[0].overview_polyline.points
           )?.coordinates?.map((item) => {
             const pos = {
               latitude: item[1] || 0,
@@ -118,13 +121,14 @@ export default function ({ navigation }) {
             };
             return pos;
           });
-          setRoute(newVal);
+          setThisRoute((thisRoute) => thisRoute.concat(newVal));
         })
         .catch((err) => {
-          console.log("run errr");
+          console.log(err);
         });
+      if (!localRoute[index + 1].id) break;
     }
-  }, [placeSelect, next]);
+  };
 
   useEffect(() => {
     if (location && location.length) {
@@ -132,26 +136,24 @@ export default function ({ navigation }) {
         latitude: location[1] || 0,
         longitude: location[0] || 0,
       };
-      setPlaceSelect(position);
       moveTo(position);
     }
   }, [location]);
 
   const toNextStep = () => {
-    if (!routes.steps[step].id) {
+    if (!routes[step].id) {
       setNextActive(false);
       setRoute([]);
     } else {
-      insertToHistory(routes.steps[step].id);
-      const globalStep = (step + 1) % (routes.steps.length - 1);
-      if (globalStep == routes.steps.length) globalStep = 0; //skip end
+      insertToHistory(routes[step].id);
+      const globalStep = (step + 1) % (routes.length - 1);
+      if (globalStep == routes.length) globalStep = 0; //skip end
       setStep(globalStep);
-      setPackageActive(routes.steps[globalStep].id);
-      setPlaceSelect(next);
-      setNext({
-        latitude: routes.steps[globalStep].location[1] || 0,
-        longitude: routes.steps[globalStep].location[0] || 0,
-      });
+      setPackageActive(routes[globalStep].id);
+      //   setNext({
+      //     latitude: routes[globalStep].location[1] || 0,
+      //     longitude: routes[globalStep].location[0] || 0,
+      //   });
     }
   };
 
@@ -173,15 +175,15 @@ export default function ({ navigation }) {
   };
 
   const setDisable = (package_id) => {
-    setRoutes({
-      steps: routes.steps.map((item) => {
+    setRoutes(
+      routes.map((item) => {
         if (item.id != package_id) {
           return item;
         } else {
           return { ...item, status: "success" };
         }
-      }),
-    });
+      })
+    );
   };
 
   const mapRef = useRef();
@@ -193,6 +195,8 @@ export default function ({ navigation }) {
       mapRef.current?.animateCamera(camera, { duration: 1000 });
     }
   };
+
+  console.log(thisRoute);
 
   return (
     <Layout>
@@ -222,13 +226,18 @@ export default function ({ navigation }) {
               : { ...INIT_POSITION.coords, ...DELTA }
           }
         >
-          {placeSelect && route.length ? (
+          <Polyline
+            coordinates={thisRoute}
+            strokeColor="#469af7"
+            strokeWidth={6}
+          />
+          {/* {placeSelect && route.length ? (
             <>
               <Marker coordinate={placeSelect} title="Your location">
                 <Image source={iconMarker} style={{ height: 20, width: 20 }} />
               </Marker>
               <Marker coordinate={next} title="Next target" />
-              {routes.steps.map((item, index) => {
+              {routes?.map((item, index) => {
                 if (item.type == "start")
                   return (
                     <Marker
@@ -267,12 +276,12 @@ export default function ({ navigation }) {
                   );
               })}
               <Polyline
-                coordinates={route}
+                coordinates={thisRoute}
                 strokeColor="#469af7"
                 strokeWidth={6}
               />
             </>
-          ) : null}
+          ) : null} */}
         </MapView>
       )}
       <View style={styles.searchContainer}>
@@ -288,7 +297,7 @@ export default function ({ navigation }) {
           >
             Package List
           </Text>
-          {nextActive ? (
+          {/* {nextActive ? (
             <Button
               onPress={toNextStep}
               // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
@@ -305,7 +314,7 @@ export default function ({ navigation }) {
               status="success"
               disabled
             />
-          )}
+          )} */}
           <View
             style={{
               width: "100%",
@@ -320,8 +329,8 @@ export default function ({ navigation }) {
               Next locations
             </Text>
             <RouteList
-              steps={routes?.steps}
-              setLocation={setNext}
+              steps={routes}
+              //   setLocation={setNext}
               packageActive={packageActive}
               setPackageActive={setPackageActive}
             />

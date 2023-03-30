@@ -8,73 +8,17 @@ export default function RouteList(props) {
   const { steps, setLocation, packageActive, setPackageActive } = props;
   const { isDarkmode } = useTheme();
   //   console.log(packageActive);
+  //   console.log(steps);
   return (
     <>
       {steps?.map((item, index) => {
-        // console.log(item)
         const isActive = item.id == packageActive;
-        return <>
-        {
-          item.status == "success" ? (
-            <View key={index} style={styles.viewDisable}>
-              <Row>
-                <Col numRows={3}>
-                  <View
-                    style={{
-                      borderColor: themeColor.gray200,
-                      borderStyle: "dashed",
-                      borderWidth: 1,
-                      padding: 5,
-                      borderRadius: 5,
-                      alignItems: "center",
-                    }}
-                  >
-                    <Ionicons
-                      name="cube"
-                      size={60}
-                      color={
-                        isDarkmode ? themeColor.white100 : themeColor.black100
-                      }
-                    />
-                  </View>
-                </Col>
-                <Col numRows={9}>
-                  <View style={{ padding: 5 }}>
-                    <Row>
-                      <Col numRows={7}>
-                        <Text size="sm" fontWeight="bold">
-                          Package Id: {item.id}
-                        </Text>
-                      </Col>
-                      <Col numRows={5}>
-                        <Text
-                          size="sm"
-                          style={{ color: themeColor.gray, textAlign: "right" }}
-                        >
-                          {item.distance}m
-                        </Text>
-                      </Col>
-                    </Row>
-                    <Text size="sm" style={{ color: themeColor.gray }}>
-                      {item.description}
-                    </Text>
-                  </View>
-                </Col>
-              </Row>
-            </View>
-          ) : (
-            <View
-            key={index}
-              style={isActive ? styles.packageActive : styles.package}
-              onPress={() => {
-                //   setPackageActive(item.id);
-                //   setLocation({
-                //     latitude: item.location[1] || 0,
-                //     longitude: item.location[0] || 0,
-                //   });
-              }}
-            >
-              {item.type === "job" ? (
+        // console.log(item);
+        // console.log(isActive);
+        return (
+          <>
+            {item.status == "success" ? (
+              <View key={index} style={styles.viewDisable}>
                 <Row>
                   <Col numRows={3}>
                     <View
@@ -122,59 +66,124 @@ export default function RouteList(props) {
                     </View>
                   </Col>
                 </Row>
-              ) : item.type === "start" ? (
-                <Row>
-                  <Col numRows={3}>
-                    <View
-                      style={{
-                        borderColor: themeColor.gray200,
-                        borderStyle: "dashed",
-                        borderWidth: 1,
-                        padding: 5,
-                        borderRadius: 5,
-                        alignItems: "center",
-                      }}
-                    >
-                      <Ionicons
-                        name="cube"
-                        size={60}
-                        color={
-                          isDarkmode ? themeColor.white100 : themeColor.black100
-                        }
-                      />
-                    </View>
-                  </Col>
-                  <Col numRows={9}>
-                    <View style={{ padding: 5 }}>
-                      <Row>
-                        <Col numRows={7}>
-                          <Text size="sm" fontWeight="bold">
-                            Store
-                          </Text>
-                        </Col>
-                        <Col numRows={5}>
-                          <Text
-                            size="sm"
-                            style={{
-                              color: themeColor.gray,
-                              textAlign: "right",
-                            }}
-                          >
-                            {item.distance}m
-                          </Text>
-                        </Col>
-                      </Row>
-                      <Text size="sm" style={{ color: themeColor.gray }}>
-                        {item.description}
-                      </Text>
-                    </View>
-                  </Col>
-                </Row>
-              ) : null}
-            </View>
-          )
-        }
-        </>
+              </View>
+            ) : (
+              <View
+                key={index}
+                style={isActive ? styles.packageActive : styles.package}
+                onPress={() => {
+                  //   setPackageActive(item.id);
+                  //   setLocation({
+                  //     latitude: item.location[1] || 0,
+                  //     longitude: item.location[0] || 0,
+                  //   });
+                }}
+              >
+                {item.id != 0 ? (
+                  <Row>
+                    <Col numRows={3}>
+                      <View
+                        style={{
+                          borderColor: themeColor.gray200,
+                          borderStyle: "dashed",
+                          borderWidth: 1,
+                          padding: 5,
+                          borderRadius: 5,
+                          alignItems: "center",
+                        }}
+                      >
+                        <Ionicons
+                          name="cube"
+                          size={60}
+                          color={
+                            isDarkmode
+                              ? themeColor.white100
+                              : themeColor.black100
+                          }
+                        />
+                      </View>
+                    </Col>
+                    <Col numRows={9}>
+                      <View style={{ padding: 5 }}>
+                        <Row>
+                          <Col numRows={7}>
+                            <Text size="sm" fontWeight="bold">
+                              Package Id: {item.id}
+                            </Text>
+                          </Col>
+                          <Col numRows={5}>
+                            <Text
+                              size="sm"
+                              style={{
+                                color: themeColor.gray,
+                                textAlign: "right",
+                              }}
+                            >
+                              {item.distance}m
+                            </Text>
+                          </Col>
+                        </Row>
+                        <Text size="sm" style={{ color: themeColor.gray }}>
+                          {item.description}
+                        </Text>
+                      </View>
+                    </Col>
+                  </Row>
+                ) : (
+                  <Row>
+                    <Col numRows={3}>
+                      <View
+                        style={{
+                          borderColor: themeColor.gray200,
+                          borderStyle: "dashed",
+                          borderWidth: 1,
+                          padding: 5,
+                          borderRadius: 5,
+                          alignItems: "center",
+                        }}
+                      >
+                        <Ionicons
+                          name="cube"
+                          size={60}
+                          color={
+                            isDarkmode
+                              ? themeColor.white100
+                              : themeColor.black100
+                          }
+                        />
+                      </View>
+                    </Col>
+                    <Col numRows={9}>
+                      <View style={{ padding: 5 }}>
+                        <Row>
+                          <Col numRows={7}>
+                            <Text size="sm" fontWeight="bold">
+                              Store
+                            </Text>
+                          </Col>
+                          <Col numRows={5}>
+                            <Text
+                              size="sm"
+                              style={{
+                                color: themeColor.gray,
+                                textAlign: "right",
+                              }}
+                            >
+                              {item.distance}m
+                            </Text>
+                          </Col>
+                        </Row>
+                        <Text size="sm" style={{ color: themeColor.gray }}>
+                          {item.description}
+                        </Text>
+                      </View>
+                    </Col>
+                  </Row>
+                )}
+              </View>
+            )}
+          </>
+        );
       })}
     </>
   );
