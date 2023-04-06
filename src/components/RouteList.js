@@ -16,9 +16,9 @@ export default function RouteList(props) {
         // console.log(item);
         // console.log(isActive);
         return (
-          <>
+          <React.Fragment key={index}>
             {item.status == "success" ? (
-              <View key={index} style={styles.viewDisable}>
+              <View style={styles.viewDisable}>
                 <Row>
                   <Col numRows={3}>
                     <View
@@ -69,7 +69,6 @@ export default function RouteList(props) {
               </View>
             ) : (
               <View
-                key={index}
                 style={isActive ? styles.packageActive : styles.package}
                 onPress={() => {
                   //   setPackageActive(item.id);
@@ -182,7 +181,7 @@ export default function RouteList(props) {
                 )}
               </View>
             )}
-          </>
+          </React.Fragment>
         );
       })}
     </>

@@ -15,18 +15,18 @@ import { BASE_URL, DEFAULT_STORE_LOCATION } from "../../config/constants";
 import axios from "axios";
 import Loading from "../utils/Loading";
 import { stringToGETJSON } from "../../libs/StringToJSON";
-import iconMarker from "../../../assets/radio-button-on-outline.png";
 import iconCube from "../../../assets/cube-outline.png";
+import iconTruck from "../../../assets/truck.png";
 import iconStore from "../../../assets/storefront-outline.png";
 import { getAuth } from "firebase/auth";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
+
   const { width, height } = Dimensions.get("window");
   const ASPECT_RATIO = width / height;
   const LATITUDE_DELTA = 0.02;
   const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
-  const VEHICLEID = 1;
   const DELTA = {
     latitudeDelta: LATITUDE_DELTA,
     longitudeDelta: LONGITUDE_DELTA,
@@ -37,18 +37,15 @@ export default function ({ navigation }) {
       longitude: DEFAULT_STORE_LOCATION.coords.longitude,
     },
   };
-  const [placeSelect, setPlaceSelect] = useState();
   const [location, setLocation] = useState(null);
   const [packageList, setPackageList] = useState();
   const [loading, setLoading] = useState(false);
   const [routes, setRoutes] = useState();
-  const [next, setNext] = useState();
-  const [route, setRoute] = useState([]);
-  const [step, setStep] = useState(1); // skip start as defaut
+  const [step, setStep] = useState(-1); // skip start as defaut
   const [packageActive, setPackageActive] = useState();
-  const [nextActive, setNextActive] = useState(true);
   const [thisRoute, setThisRoute] = useState([]);
-
+  const [thisPolylineList, setThisPolylineList] = useState([]);
+  const [thisPolyline, setThisPolyline] = useState([]);
   const auth = getAuth();
 
   useEffect(() => {
@@ -62,13 +59,24 @@ export default function ({ navigation }) {
       }
       fetchData()
         .then((response) => {
-          setPackageList(response.data.data);
+          setStep(response.data.data.steps);
+          setPackageList(response.data.data.trip_data);
         })
         .catch((error) => {
           console.log(error);
         });
     })();
   }, []);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      //assign interval to a variable to clear it.
+      if (thisPolyline?.length)
+        setThisPolyline((thisPolyline) => thisPolyline.slice(1));
+    }, 1000);
+
+    return () => clearInterval(intervalId); //This is important
+  }, [thisPolylineList]);
 
   useEffect(() => {
     if (packageList && packageList?.routes) {
@@ -121,6 +129,10 @@ export default function ({ navigation }) {
             };
             return pos;
           });
+          setThisPolylineList((thisPolylineList) => [
+            ...thisPolylineList,
+            newVal,
+          ]);
           setThisRoute((thisRoute) => thisRoute.concat(newVal));
         })
         .catch((err) => {
@@ -140,21 +152,43 @@ export default function ({ navigation }) {
     }
   }, [location]);
 
-  const toNextStep = () => {
-    if (!routes[step].id) {
-      setNextActive(false);
-      setRoute([]);
-    } else {
-      insertToHistory(routes[step].id);
-      const globalStep = (step + 1) % (routes.length - 1);
-      if (globalStep == routes.length) globalStep = 0; //skip end
-      setStep(globalStep);
-      setPackageActive(routes[globalStep].id);
-      //   setNext({
-      //     latitude: routes[globalStep].location[1] || 0,
-      //     longitude: routes[globalStep].location[0] || 0,
-      //   });
+  useEffect(() => {
+    setThisPolyline(thisPolylineList[step - 1]);
+    console.log(step);
+  }, [step, thisPolylineList]);
+
+  useEffect(() => {
+    if (!thisPolyline?.length) {
+      toNextStep();
     }
+  }, [thisPolyline]);
+
+  const toNextStep = () => {
+    const nextStep = step + 1;
+    if (routes) {
+      insertToHistory(routes[step].id);
+      if (routes[nextStep].id) {
+        const postData = {
+          account_id: auth.currentUser.uid,
+          steps: nextStep,
+        };
+        axios({
+          method: "post",
+          url: `${BASE_URL}/update_steps_trip`,
+          data: postData,
+        })
+          .then((res) => {
+            console.log(res.data);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        setPackageActive(routes[nextStep].id);
+      } else {
+        console.log("aaaa");
+      }
+    }
+    setStep(nextStep);
   };
 
   const insertToHistory = (package_id) => {
@@ -192,11 +226,9 @@ export default function ({ navigation }) {
     const camera = await mapRef.current?.getCamera();
     if (camera) {
       camera.center = position;
-      mapRef.current?.animateCamera(camera, { duration: 1000 });
+      mapRef.current?.animateCamera(camera, { duration: 500 });
     }
   };
-
-  console.log(thisRoute);
 
   return (
     <Layout>
@@ -228,60 +260,37 @@ export default function ({ navigation }) {
         >
           <Polyline
             coordinates={thisRoute}
+            strokeColor="#808080"
+            strokeWidth={4}
+          />
+          {thisPolyline?.length ? (
+            <Marker coordinate={thisPolyline[0]} title="index">
+              <Image source={iconTruck} style={{ height: 30, width: 30 }} />
+            </Marker>
+          ) : null}
+          <Polyline
+            coordinates={thisPolyline ? thisPolyline : null}
             strokeColor="#469af7"
             strokeWidth={6}
+            style={{ zIndex: 10 }}
           />
-          {/* {placeSelect && route.length ? (
-            <>
-              <Marker coordinate={placeSelect} title="Your location">
-                <Image source={iconMarker} style={{ height: 20, width: 20 }} />
+          {routes?.map((item, index) => {
+            return (
+              <Marker
+                coordinate={{
+                  latitude: item.location[1] || 0,
+                  longitude: item.location[0] || 0,
+                }}
+                title="index"
+                key={index}
+              >
+                <Image
+                  source={item?.id ? iconCube : iconStore}
+                  style={{ height: 20, width: 20 }}
+                />
               </Marker>
-              <Marker coordinate={next} title="Next target" />
-              {routes?.map((item, index) => {
-                if (item.type == "start")
-                  return (
-                    <Marker
-                      coordinate={{
-                        latitude: item.location[1] || 0,
-                        longitude: item.location[0] || 0,
-                      }}
-                      title="index"
-                      key={index}
-                    >
-                      <Image
-                        source={iconStore}
-                        style={{ height: 20, width: 20 }}
-                      />
-                    </Marker>
-                  );
-                else if (
-                  index != step &&
-                  index != step - 1 &&
-                  item.type == "job"
-                )
-                  return (
-                    <Marker
-                      coordinate={{
-                        latitude: item.location[1] || 0,
-                        longitude: item.location[0] || 0,
-                      }}
-                      title="index"
-                      key={index}
-                    >
-                      <Image
-                        source={iconCube}
-                        style={{ height: 20, width: 20 }}
-                      />
-                    </Marker>
-                  );
-              })}
-              <Polyline
-                coordinates={thisRoute}
-                strokeColor="#469af7"
-                strokeWidth={6}
-              />
-            </>
-          ) : null} */}
+            );
+          })}
         </MapView>
       )}
       <View style={styles.searchContainer}>
@@ -297,24 +306,6 @@ export default function ({ navigation }) {
           >
             Package List
           </Text>
-          {/* {nextActive ? (
-            <Button
-              onPress={toNextStep}
-              // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
-              text="Next"
-              style={{ marginTop: 10, backgroundColor: themeColor.white }}
-              status="primary"
-            />
-          ) : (
-            <Button
-              //   onPress={toNextStep}
-              // text={step == routes?.steps.length - 2 ? "Finish" : "Next"}
-              text="Completed"
-              style={{ marginTop: 10, backgroundColor: themeColor.white }}
-              status="success"
-              disabled
-            />
-          )} */}
           <View
             style={{
               width: "100%",
