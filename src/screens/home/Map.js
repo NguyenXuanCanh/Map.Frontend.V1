@@ -19,6 +19,8 @@ import iconCube from "../../../assets/cube-outline.png";
 import iconTruck from "../../../assets/truck.png";
 import iconStore from "../../../assets/storefront-outline.png";
 import { getAuth } from "firebase/auth";
+import { Col, Row } from "../../components/Flex";
+import Modal from "react-native-modal";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -46,6 +48,7 @@ export default function ({ navigation }) {
   const [thisRoute, setThisRoute] = useState([]);
   const [thisPolylineList, setThisPolylineList] = useState([]);
   const [thisPolyline, setThisPolyline] = useState([]);
+  const [isVisible, setVisible] = useState(false);
   const auth = getAuth();
 
   useEffect(() => {
@@ -71,8 +74,8 @@ export default function ({ navigation }) {
   useEffect(() => {
     const intervalId = setInterval(() => {
       //assign interval to a variable to clear it.
-      if (thisPolyline?.length)
-        setThisPolyline((thisPolyline) => thisPolyline.slice(1));
+      if (thisPolyline?.length && step < routes.length)
+        setThisPolyline((thisPolyline) => thisPolyline?.slice(1));
     }, 1000);
 
     return () => clearInterval(intervalId); //This is important
@@ -102,7 +105,7 @@ export default function ({ navigation }) {
       //     latitude: routes[step].location[1] || 0,
       //     longitude: routes[step].location[0] || 0,
       //   });
-      setPackageActive(routes[step].id);
+      if (routes[step]) setPackageActive(routes[step].id);
     }
   }, [routes]);
 
@@ -166,8 +169,9 @@ export default function ({ navigation }) {
   const toNextStep = () => {
     const nextStep = step + 1;
     if (routes) {
-      insertToHistory(routes[step].id);
-      if (routes[nextStep].id) {
+      if (step < routes.length && routes[step])
+        insertToHistory(routes[step].id);
+      if (routes[nextStep]?.id) {
         const postData = {
           account_id: auth.currentUser.uid,
           steps: nextStep,
@@ -184,8 +188,9 @@ export default function ({ navigation }) {
             console.log(err);
           });
         setPackageActive(routes[nextStep].id);
-      } else {
-        console.log("aaaa");
+      } else if (routes[nextStep] === undefined) {
+        setVisible(true);
+        // if (nextStep > 1) setVisible(true);
       }
     }
     setStep(nextStep);
@@ -320,7 +325,8 @@ export default function ({ navigation }) {
               Next locations
             </Text>
             <RouteList
-              steps={routes}
+              routes={routes}
+              step={step}
               //   setLocation={setNext}
               packageActive={packageActive}
               setPackageActive={setPackageActive}
@@ -328,6 +334,42 @@ export default function ({ navigation }) {
           </View>
         </ScrollView>
       </View>
+      <Modal isVisible={isVisible} onBackdropPress={() => setVisible(false)}>
+        <View
+          style={{
+            flex: 1,
+            marginTop: 10,
+            backgroundColor: "#fff",
+            borderColor: "#f3f3f3",
+            borderStyle: "solid",
+            borderWidth: 2,
+            borderRadius: 5,
+            padding: 20,
+            maxHeight: 200,
+          }}
+        >
+          <Text style={{ marginBottom: 10, textAlign: "center" }}>
+            Congratulation
+          </Text>
+          <Text
+            style={{ marginBottom: 10, marginTop: 10, textAlign: "center" }}
+          >
+            Your trip's done
+          </Text>
+          <Row style={{ marginTop: "auto" }}>
+            <Col numRows={10}>
+              <Button
+                text="Back to home"
+                status="primary"
+                onPress={() => navigation.navigate("Home")}
+                size="md"
+                style={{ height: 40 }}
+                outline
+              />
+            </Col>
+          </Row>
+        </View>
+      </Modal>
     </Layout>
   );
 }

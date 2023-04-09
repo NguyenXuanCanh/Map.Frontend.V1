@@ -5,19 +5,19 @@ import { Button, Text, themeColor, useTheme } from "react-native-rapi-ui";
 import { Col, Row } from "./Flex";
 
 export default function RouteList(props) {
-  const { steps, setLocation, packageActive, setPackageActive } = props;
+  const { routes, setLocation, packageActive, setPackageActive, step } = props;
   const { isDarkmode } = useTheme();
   //   console.log(packageActive);
-  //   console.log(steps);
+  //   console.log(routes);
   return (
     <>
-      {steps?.map((item, index) => {
+      {routes?.map((item, index) => {
         const isActive = item.id == packageActive;
         // console.log(item);
         // console.log(isActive);
         return (
           <React.Fragment key={index}>
-            {item.status == "success" ? (
+            {index < step ? (
               <View style={styles.viewDisable}>
                 <Row>
                   <Col numRows={3}>
