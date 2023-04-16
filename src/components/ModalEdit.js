@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { View } from "react-native";
 import Modal from "react-native-modal";
 import { Button, Text, TextInput } from "react-native-rapi-ui";
 import { Col, Row } from "./Flex";
 
 export default function ModalEdit(props) {
-  const { isVisible, onClose, title, onChange } = props;
-  const [text, setText] = useState("");
+  const { isVisible, onClose, title, onChange, value } = props;
+  const [text, setText] = useState(value);
+  useEffect(() => {
+    if (value) setText(value);
+  }, [value]);
+  console.log(value);
   return (
     <Modal
       isVisible={isVisible}

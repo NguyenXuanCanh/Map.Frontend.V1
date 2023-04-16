@@ -9,7 +9,7 @@ export default function HistoryItem(props) {
   const { style, address, status, time, total } = props;
   return (
     <Row style={style}>
-      <Col numRows={2}>
+      <Col numRows={1}>
         <Ionicons
           name="cube"
           size={50}
@@ -25,7 +25,7 @@ export default function HistoryItem(props) {
           {status}
         </Text>
         <Text fontWeight="light" style={{ marginTop: 5, fontSize: 13 }}>
-          {time}
+          Time: {time?.slice(0, 10)}, {time?.slice(11, 16)}
         </Text>
       </Col>
       <Col numRows={4} style={{}}>

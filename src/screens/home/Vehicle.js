@@ -9,7 +9,7 @@ import InfoRow from "../../components/InfoRow";
 import ModalEdit from "../../components/ModalEdit";
 import { BASE_URL } from "../../config/constants";
 import Loading from "../utils/Loading";
-import BoxTruck from "../../../assets/box-truck.png"
+import BoxTruck from "../../../assets/box-truck.png";
 
 export default function ({ navigation }) {
   const { isDarkmode } = useTheme();
@@ -17,33 +17,61 @@ export default function ({ navigation }) {
   const [modalTitle, setModalTitle] = useState("");
   const [key, setKey] = useState("");
   const [truckInfo, setStructInfo] = useState();
-  const [loading, setLoading]=useState(false);
+  const [loading, setLoading] = useState(false);
+  const [value, setValue] = useState("");
   const auth = getAuth();
 
-  useEffect(()=>{
+  useEffect(() => {
     setLoading(true);
     (async () => {
-        async function fetchData() {
-            const response = await axios.get(`${BASE_URL}/vehicle/${auth.currentUser.uid}`);
-            return response;
-        }
-        if(auth.currentUser){
-            fetchData()
-        .then((response)=>{
-            console.log(response.data.data)
-            setStructInfo(response.data.data)
-            setLoading(false)
-        }).catch((error)=>{
-            console.log(error)
-        });
-        }
+      async function fetchData() {
+        const response = await axios.get(
+          `${BASE_URL}/vehicle/${auth.currentUser.uid}`
+        );
+        return response;
+      }
+      if (auth.currentUser) {
+        fetchData()
+          .then((response) => {
+            console.log(response.data.data);
+            setStructInfo(response.data.data);
+            setLoading(false);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }
     })();
-  },[])
+  }, []);
+
+  const updateVihicle = async (accountId, key, value) => {
+    setLoading(true);
+    setModalVisible(false);
+    async function fetchData() {
+      const response = await axios.post(`${BASE_URL}/vehicle_update`, {
+        account_id: accountId,
+        key: key,
+        value: value,
+      });
+      return response;
+    }
+    if (auth.currentUser) {
+      fetchData()
+        .then((response) => {
+          setStructInfo({ ...truckInfo, [key]: value });
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
+  };
 
   const toggleModal = (key, title) => {
     setModalVisible(!isModalVisible);
     setKey(key);
     setModalTitle(title);
+    setValue(truckInfo[key]);
   };
 
   return (
@@ -65,59 +93,65 @@ export default function ({ navigation }) {
         }
         leftAction={() => navigation.goBack()}
       />
-      {loading ? <Loading/> : 
-      <ScrollView contentContainerStyle={{}}>
-      <View
-        style={{
-          alignItems: "center",
-          justifyContent: "flex-end",
-          padding: 15,
-        }}
-      >
-        <Image
-          resizeMode="cover"
-          style={{
-            width: 150,
-            height: 150,
-            // borderRadius: 100,
-          }}
-          source={BoxTruck}
-        />
-      </View>
+      {loading ? (
+        <Loading />
+      ) : (
+        <ScrollView contentContainerStyle={{}}>
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "flex-end",
+              padding: 15,
+            }}
+          >
+            <Image
+              resizeMode="cover"
+              style={{
+                width: 150,
+                height: 150,
+                // borderRadius: 100,
+              }}
+              source={BoxTruck}
+            />
+          </View>
 
-      <View
-        style={{
-          paddingVertical: 10,
-          paddingHorizontal: 30,
-        }}
-      >
-        <InfoRow title="Brand" value={truckInfo?.brand} startIcon="card" 
-        endIcon="create"
-        style={{ marginTop: 20 }}
-        onChange={() => {
-          toggleModal("brand", "Update vehicle brand");
-        }}/>
-        <InfoRow
-          title="Bảng số xe"
-          value={truckInfo?.license}
-          startIcon="document"
-          endIcon="create"
-          style={{ marginTop: 20 }}
-          onChange={() => {
-            toggleModal("license", "Update vehicle license");
-          }}
-        />
-        <InfoRow
-          title="Tên chủ xe"
-          value={truckInfo?.owner_name}
-          startIcon="person"
-          endIcon="create"
-          style={{ marginTop: 20 }}
-          onChange={() => {
-            toggleModal("owner_name", "Update vehicle owner name");
-          }}
-        />
-        <InfoRow
+          <View
+            style={{
+              paddingVertical: 10,
+              paddingHorizontal: 30,
+            }}
+          >
+            <InfoRow
+              title="Brand"
+              value={truckInfo?.brand}
+              startIcon="card"
+              endIcon="create"
+              style={{ marginTop: 20 }}
+              onChange={() => {
+                toggleModal("brand", "Update vehicle brand");
+              }}
+            />
+            <InfoRow
+              title="Bảng số xe"
+              value={truckInfo?.license}
+              startIcon="document"
+              endIcon="create"
+              style={{ marginTop: 20 }}
+              onChange={() => {
+                toggleModal("license", "Update vehicle license");
+              }}
+            />
+            <InfoRow
+              title="Tên chủ xe"
+              value={truckInfo?.owner_name}
+              startIcon="person"
+              endIcon="create"
+              style={{ marginTop: 20 }}
+              onChange={() => {
+                toggleModal("owner_name", "Update vehicle owner name");
+              }}
+            />
+            {/* <InfoRow
           title="Kích thước thùng xe"
           value={truckInfo?.tank_volume + "(KG)"}
           startIcon="cube"
@@ -126,28 +160,27 @@ export default function ({ navigation }) {
           onChange={() => {
             toggleModal("tank_volume", "Update vehicle tank volume");
           }}
-        />
-        <InfoRow
-          title="Khối lượng thùng xe"
-          value={truckInfo?.tank_weight + "(KG)"}
-          startIcon="stopwatch"
-          endIcon="create"
-          style={{ marginTop: 20 }}
-          onChange={() => {
-            toggleModal("weight", "Update vehicle tank weight");
-          }}
-        />
-      </View>
-    </ScrollView>
-      }
+        /> */}
+            <InfoRow
+              title="Khối lượng thùng xe"
+              value={truckInfo?.tank_weight + "(KG)"}
+              startIcon="stopwatch"
+              endIcon="create"
+              style={{ marginTop: 20 }}
+              onChange={() => {
+                toggleModal("tank_weight", "Update vehicle tank weight");
+              }}
+            />
+          </View>
+        </ScrollView>
+      )}
       <ModalEdit
         isVisible={isModalVisible}
         onClose={toggleModal}
         title={modalTitle}
+        value={value}
         onChange={(value) => {
-          console.log(key);
-          console.log(modalTitle);
-          console.log(value);
+          updateVihicle(auth.currentUser.uid, key, value);
         }}
       />
     </Layout>
